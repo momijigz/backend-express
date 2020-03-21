@@ -139,12 +139,14 @@ exports.follow = async (req, res, next) => {
       name: foundUser.name,
       email: foundUser.email,
       username: foundUser.username,
+      verified: foundUser.verified,
       profilePictureUrl: foundUser.profilePictureUrl,
       headerPictureUrl: foundUser.headerPictureUrl,
       posts: postFeed,
       comments: commentFeed,
       followers,
-      following
+      following,
+      createdAt: foundUser.createdAt
     };
 
     res.status(200).json(feeds);
@@ -185,12 +187,14 @@ exports.unfollow = async (req, res, next) => {
       name: foundUser.name,
       email: foundUser.email,
       username: foundUser.username,
+      verified: foundUser.verified,
       profilePictureUrl: foundUser.profilePictureUrl,
       headerPictureUrl: foundUser.headerPictureUrl,
       posts: postFeed,
       comments: commentFeed,
       followers,
-      following
+      following,
+      createdAt: foundUser.createdAt
     };
 
     res.status(200).json(feeds);
