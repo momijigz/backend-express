@@ -12,13 +12,12 @@ const userModel = new Schema(
     name: { type: String },
     resetToken: { type: String },
     organization: { type: Boolean }, // if the user is a registered institution
-    verified: { type: Boolean }, // if the user has been independently verified
+    verified: { type: Boolean, default: false }, // if the user has been independently verified
     email: { type: String, unique: true, lowercase: true, required: true },
     summary: { type: String },
     username: { type: String, required: true, lowercase: true, unique: true },
     password: { type: String, required: true },
     karma: { type: Number, default: 0 },
-    verified: { type: Boolean },
     expert: { type: Boolean }, // similar to Yelp Elite's: experts are qualified people in industry who have been vetted and can provide good feedback
     createdAt: { type: Date },
     sessionId: { type: String }, // for socket connections
