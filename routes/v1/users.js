@@ -59,7 +59,7 @@ const s3 = new AWS.S3({
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
 });
 
-const BUCKET_NAME = 'pan.gaea/user';
+const BUCKET_NAME = 'giving-tree/user';
 
 function generateHash(user) {
   let username = user.username;
