@@ -29,11 +29,11 @@ const userModel = new Schema(
     balanceUSD: { type: Number, default: 0 },
     headerPictureUrl: {
       type: mongoose.SchemaTypes.Url,
-      default: 'https://s3.amazonaws.com/pan.gaea/giving_tree.jpg'
+      default: 'https://d1ppmvgsdgdlyy.cloudfront.net/giving_tree.jpg'
     },
     profilePictureUrl: {
       type: mongoose.SchemaTypes.Url,
-      default: 'https://s3.amazonaws.com/pan.gaea/acacia.svg'
+      default: 'https://d1ppmvgsdgdlyy.cloudfront.net/acacia.svg'
     },
     donations: [{ type: Schema.Types.ObjectId, ref: 'donation', required: true }],
     tokens: [

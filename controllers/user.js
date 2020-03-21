@@ -86,7 +86,7 @@ exports.createUser = async (req, res, next) => {
       password,
       email: email.toLowerCase(),
       name,
-      profilePictureUrl: 'https://s3.amazonaws.com/pan.gaea/acacia.svg'
+      profilePictureUrl: 'https://d1ppmvgsdgdlyy.cloudfront.net/acacia.svg'
     });
 
     const token = await user.generateAuthToken(true);

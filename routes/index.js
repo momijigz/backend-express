@@ -437,10 +437,10 @@ async function generateHash(username) {
     .update(username.toLowerCase())
     .digest('hex');
 
-  const valid = await validImage(`https://d2eu43cj44828j.cloudfront.net/user/${hash}`);
+  const valid = await validImage(`https://d1ppmvgsdgdlyy.cloudfront.net/user/${hash}`);
   return valid
-    ? `https://d2eu43cj44828j.cloudfront.net/user/${hash}`
-    : `https://s3.amazonaws.com/pan.gaea/acacia.svg`;
+    ? `https://d1ppmvgsdgdlyy.cloudfront.net/user/${hash}`
+    : `https://d1ppmvgsdgdlyy.cloudfront.net/acacia.svg`;
 }
 
 // search function
@@ -684,7 +684,7 @@ router.get('/newest/:page', auth, async (req, res) => {
 //   all.map(async p => {
 //     if (!p.headerPictureUrl) {
 //       console.log('no header');
-//       p.headerPictureUrl = 'https://d2eu43cj44828j.cloudfront.net/givingtree.jpg';
+//       p.headerPictureUrl = 'https://d1ppmvgsdgdlyy.cloudfront.net/givingtree.jpg';
 //       await p.save();
 //     } else {
 //       console.log('yes header: ', p.username, `, header: `, p.headerPictureUrl);
