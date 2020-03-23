@@ -141,9 +141,6 @@ exports.publishPost = async (req, res, next) => {
     const user = req.user;
     const postId = req.params.postId;
 
-    console.log('postId: ', postId);
-    console.log('user._id: ', user._id);
-
     const posts = await Post.findOne({ _id: postId, authorId: user._id });
     if (posts && (posts.draft === false || posts.published === true)) {
       return res.status(400).send({ message: `posts ${postId} has already been published` });
@@ -153,6 +150,11 @@ exports.publishPost = async (req, res, next) => {
     posts.categories = categories;
     posts.title = title;
     posts.text = text;
+
+    console.log('text: ', text);
+    console.log('JSON.parse(text).location: ', JSON.parse(text).location);
+    const location = { type: 'Point', coordinates: [JSON.parse(text).location.lat, JSON.parse(text).location.lng] };
+    posts.loc = location;
 
     posts.draft = false;
     posts.published = true;

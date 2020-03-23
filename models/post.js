@@ -3,14 +3,26 @@ const Schema = mongoose.Schema;
 const mongooseAlgolia = require('mongoose-algolia');
 const Comment = require(__dirname + '/comment');
 
+const pointSchema = new Schema({
+  type: {
+    type: String,
+    enum: ['Point'],
+    required: true
+  },
+  coordinates: {
+    type: [Number],
+    required: true
+  }
+});
+
 const postModel = new Schema(
   {
     authorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     type: { type: String, default: 'Post' },
     createdAt: { type: Date },
     updatedAt: { type: Date },
-    startDate: { type: Date }, // when the research began
-    endDate: { type: Date, default: null }, // when the research finished (null = ongoing)
+    startDate: { type: Date }, // when the request began
+    endDate: { type: Date, default: null }, // when the request finished (null = ongoing)
     categories: [{ type: String }],
     draft: { type: Boolean }, // if post is still in review
     published: { type: Boolean }, // if post is publically available
@@ -36,10 +48,7 @@ const postModel = new Schema(
         }
       }
     ],
-    loc: {
-      type: { type: String },
-      coordinates: []
-    },
+    loc: pointSchema,
     completed: { type: Boolean, required: true, default: false },
     assignedUser: { type: Schema.Types.ObjectId, ref: 'User' },
     flagged: [{ type: Schema.Types.ObjectId, ref: 'User', required: true }], // other Users can flag a post if it violates, after a certain number, the flagged content is manually reviewed

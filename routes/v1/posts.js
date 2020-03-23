@@ -91,6 +91,76 @@ const addToSet = (array, item) => {
   return Object.keys(set);
 };
 
+postRouter.put('/:postId/complete', auth, async (req, res) => {
+  const user = req.user;
+  Post.findById(req.params.postId)
+    .then(async post => {
+      if (!post) {
+        return res.status(400).json({ message: `invalid postId` });
+      }
+
+      post.completed = true;
+      post.endDate = new Date();
+
+      post.save();
+
+      let postAuthor = await User.findById(post.authorId).exec();
+
+      sendNotification(postAuthor, req.user, post, 'Complete');
+
+      return res.status(200).send(post);
+    })
+    .catch(err => {
+      return res.status(401).send({ error: `Error when upvoting: ${err}` });
+    });
+});
+
+postRouter.put('/:postId/claim', auth, async (req, res) => {
+  const user = req.user;
+  Post.findById(req.params.postId)
+    .then(async post => {
+      if (!post) {
+        return res.status(400).json({ message: `invalid postId` });
+      }
+
+      post.assignedUser = user._id;
+
+      post.save();
+
+      let postAuthor = await User.findById(post.authorId).exec();
+
+      sendNotification(postAuthor, req.user, post, 'Claim');
+
+      return res.status(200).send(post);
+    })
+    .catch(err => {
+      return res.status(401).send({ error: `Error when upvoting: ${err}` });
+    });
+});
+
+postRouter.put('/:postId/unclaim', auth, async (req, res) => {
+  const user = req.user;
+  Post.findById(req.params.postId)
+    .then(async post => {
+      if (!post) {
+        return res.status(400).json({ message: `invalid postId` });
+      }
+
+      post.assignedUser = user._id;
+
+      post.save();
+
+      let postAuthor = await User.findById(post.authorId).exec();
+
+      sendNotification(postAuthor, req.user, post, 'Unclaim');
+
+      return res.status(200).send(post);
+    })
+    .catch(err => {
+      return res.status(401).send({ error: `Error when upvoting: ${err}` });
+    });
+});
+
 postRouter.put('/:postId/vote-up', auth, async (req, res) => {
   const user = req.user;
   Post.findById(req.params.postId)
