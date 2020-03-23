@@ -93,51 +93,52 @@ const addToSet = (array, item) => {
 
 postRouter.put('/:postId/complete', auth, async (req, res) => {
   const user = req.user;
-  Post.findById(req.params.postId)
-    .then(async post => {
-      if (!post) {
-        return res.status(400).json({ message: `invalid postId` });
-      }
+  try {
+    let post = await Post.findOne({ _id: req.params.postId })
+      .populate('assignedUser')
+      .exec();
+    if (!post) {
+      return res.status(400).json({ message: `invalid postId` });
+    }
 
-      post.completed = true;
-      post.endDate = new Date();
+    post.completed = true;
+    post.endDate = new Date();
 
-      // optional params
-      if (req.body.method) {
-        post.trackingDetails.method = req.body.method;
-      }
+    // optional params
+    if (req.body.method) {
+      post.trackingDetails.method = req.body.method;
+    }
 
-      if (req.body.customerId) {
-        post.trackingDetails.customerId = req.body.customerId;
-      }
+    if (req.body.customerId) {
+      post.trackingDetails.customerId = req.body.customerId;
+    }
 
-      if (req.body.created) {
-        post.trackingDetails.created = req.body.created;
-      }
+    if (req.body.created) {
+      post.trackingDetails.created = req.body.created;
+    }
 
-      if (req.body.deliveryId) {
-        post.trackingDetails.deliveryId = req.body.deliveryId;
-      }
+    if (req.body.deliveryId) {
+      post.trackingDetails.deliveryId = req.body.deliveryId;
+    }
 
-      if (req.body.dropoffEta) {
-        post.trackingDetails.dropoffEta = req.body.dropoffEta;
-      }
+    if (req.body.dropoffEta) {
+      post.trackingDetails.dropoffEta = req.body.dropoffEta;
+    }
 
-      if (req.body.notes) {
-        post.trackingDetails.notes = req.body.notes;
-      }
+    if (req.body.notes) {
+      post.trackingDetails.notes = req.body.notes;
+    }
 
-      post.save();
+    post.save();
 
-      let postAuthor = await User.findById(post.authorId).exec();
+    let postAuthor = await User.findById(post.authorId).exec();
 
-      sendNotification(postAuthor, req.user, post, 'Complete');
+    sendNotification(postAuthor, req.user, post, 'Complete');
 
-      return res.status(200).send(post);
-    })
-    .catch(err => {
-      return res.status(401).send({ error: `Error when upvoting: ${err}` });
-    });
+    return res.status(200).send(post);
+  } catch (err) {
+    return res.status(401).send({ error: `Error when completing order: ${err}` });
+  }
 });
 
 postRouter.put('/:postId/claim', auth, async (req, res) => {
@@ -169,7 +170,7 @@ postRouter.put('/:postId/claim', auth, async (req, res) => {
       return res.status(200).send(post);
     })
     .catch(err => {
-      return res.status(401).send({ error: `Error when upvoting: ${err}` });
+      return res.status(401).send({ error: `Error when claiming order: ${err}` });
     });
 });
 
@@ -201,7 +202,7 @@ postRouter.put('/:postId/unclaim', auth, async (req, res) => {
       }
     })
     .catch(err => {
-      return res.status(401).send({ error: `Error when upvoting: ${err}` });
+      return res.status(401).send({ error: `Error when unclaiming order: ${err}` });
     });
 });
 

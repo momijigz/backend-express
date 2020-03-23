@@ -712,7 +712,10 @@ router.get('/completed/:page', auth, async (req, res) => {
             _id: entry.postId,
             completed: true,
             assignedUser: entry.ownerId
-          });
+          })
+            .populate('assignedUser', 'name username email karma createdAt profilePictureUrl')
+            .exec();
+
           if (foundPost) {
             compiledNewsfeed.push(foundPost);
           }
@@ -790,6 +793,15 @@ router.get('/completed/:page', auth, async (req, res) => {
   }
 });
 
+let filters = [
+  'name',
+  'resetToken',
+  'verified',
+  'summary',
+  'password',
+  'tokens'
+];
+
 router.get('/global/:page', auth, async (req, res) => {
   try {
     const resPerPage = 10;
@@ -809,10 +821,14 @@ router.get('/global/:page', auth, async (req, res) => {
 
       switch (entry.type) {
         case 'Post':
-          let foundPost = await Post.findOne({
-            _id: entry.postId,
-            completed: true
-          });
+          let foundPost = await Post.findOne(
+            {
+              _id: entry.postId,
+              completed: true
+            }
+          )
+            .populate('assignedUser', 'name username email karma createdAt profilePictureUrl')
+            .exec();
           if (foundPost) {
             compiledNewsfeed.push(foundPost);
           }
