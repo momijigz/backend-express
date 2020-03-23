@@ -50,6 +50,15 @@ const postModel = new Schema(
     ],
     loc: pointSchema,
     completed: { type: Boolean, required: true, default: false },
+    trackingDetails: {
+      method: { type: String }, // postmates, text, etc
+      customerId: { type: String }, // optional for 3rd party vendors
+      deliveryId: { type: String }, // optional for 3rd party vendors
+      created: { type: Date }, // when was order initiated
+      updated: { type: Date }, // when was order updated
+      dropoffEta: { type: Date }, // when was order was dropped off
+      notes: { type: String }, // any notes from order (missing items, etc)
+    },
     assignedUser: { type: Schema.Types.ObjectId, ref: 'User' },
     flagged: [{ type: Schema.Types.ObjectId, ref: 'User', required: true }], // other Users can flag a post if it violates, after a certain number, the flagged content is manually reviewed
     voteTotal: { type: Number, default: 0 },

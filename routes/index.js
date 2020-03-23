@@ -508,7 +508,7 @@ router.get('/discover/:page', auth, async (req, res) => {
         case 'Post':
           let foundPost = await Post.findOne({
             _id: entry.postId,
-            completed: false,
+            completed: false
             // assignedUser: undefined
           });
           if (foundPost) {
