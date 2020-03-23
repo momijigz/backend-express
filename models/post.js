@@ -11,7 +11,7 @@ const postModel = new Schema(
     updatedAt: { type: Date },
     startDate: { type: Date }, // when the research began
     endDate: { type: Date, default: null }, // when the research finished (null = ongoing)
-    categories: [{ type: String, required: true }],
+    categories: [{ type: String }],
     draft: { type: Boolean }, // if post is still in review
     published: { type: Boolean }, // if post is publically available
     username: {

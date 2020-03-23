@@ -16,13 +16,13 @@ exports.deletePost = async (req, res, next) => {
       return;
     }
 
-    let { postsId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(postsId)) {
-      return res.status(422).json({ message: `postsId ${postsId} doesn't exist` });
+    let { postId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(422).json({ message: `postId ${postId} doesn't exist` });
     }
 
-    let posts = await Post.findOne({ _id: postsId });
-    let newsfeed = await Newsfeed.findOne({ postId: postsId, deleted: false });
+    let posts = await Post.findOne({ _id: postId });
+    let newsfeed = await Newsfeed.findOne({ postId: postId, deleted: false });
 
     if (posts) {
       posts.remove();
@@ -33,10 +33,10 @@ exports.deletePost = async (req, res, next) => {
     }
 
     if (!posts && !newsfeed) {
-      return res.status(422).json({ message: `postsId ${postsId} doesn't exist` });
+      return res.status(422).json({ message: `postId ${postId} doesn't exist` });
     }
 
-    return res.status(200).json({ message: `successfully deleted ${postsId}` });
+    return res.status(200).json({ message: `successfully deleted ${postId}` });
   } catch (err) {
     console.log('err: ', err);
     res.status(400).json({ message: `error while deleting posts`, error: err });
@@ -81,9 +81,9 @@ exports.saveDraft = async (req, res, next) => {
     }
 
     const user = req.user;
-    const postsId = req.params.postsId;
+    const postId = req.params.postId;
 
-    const posts = await Post.findOne({ _id: postsId, authorId: user._id });
+    const posts = await Post.findOne({ _id: postId, authorId: user._id });
     const { categories, title, text } = req.body;
     posts.categories = categories;
     posts.title = title;
@@ -110,9 +110,9 @@ exports.editPost = async (req, res, next) => {
     }
 
     const user = req.user;
-    const postsId = req.params.postsId;
+    const postId = req.params.postId;
 
-    const posts = await Post.findOne({ _id: postsId, authorId: user._id });
+    const posts = await Post.findOne({ _id: postId, authorId: user._id });
     const { categories, title, text } = req.body;
     posts.categories = categories;
     posts.title = title;
@@ -139,11 +139,14 @@ exports.publishPost = async (req, res, next) => {
     }
 
     const user = req.user;
-    const postsId = req.params.postsId;
+    const postId = req.params.postId;
 
-    const posts = await Post.findOne({ _id: postsId, authorId: user._id });
-    if (posts.draft === false || posts.published === true) {
-      return res.status(400).send({ message: `posts ${postsId} has already been published` });
+    console.log('postId: ', postId);
+    console.log('user._id: ', user._id);
+
+    const posts = await Post.findOne({ _id: postId, authorId: user._id });
+    if (posts && (posts.draft === false || posts.published === true)) {
+      return res.status(400).send({ message: `posts ${postId} has already been published` });
     }
 
     const { categories, title, text } = req.body;
@@ -191,7 +194,7 @@ exports.validate = method => {
       ];
     }
     case 'deletePost': {
-      return [param('postsId', 'postsId required').exists()];
+      return [param('postId', 'postId required').exists()];
     }
   }
 };
