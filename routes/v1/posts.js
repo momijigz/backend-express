@@ -146,7 +146,7 @@ postRouter.put('/:postId/unclaim', auth, async (req, res) => {
         return res.status(400).json({ message: `invalid postId` });
       }
 
-      post.assignedUser = user._id;
+      post.assignedUser = undefined;
 
       post.save();
 

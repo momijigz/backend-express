@@ -506,7 +506,7 @@ router.get('/discover/:page', auth, async (req, res) => {
 
       switch (entry.type) {
         case 'Post':
-          let foundPost = await Post.findById(entry.postId);
+          let foundPost = await Post.findOne({ _id: entry.postId, completed: false, assignedUser: undefined });
           if (foundPost) {
             compiledNewsfeed.push(foundPost);
           }
