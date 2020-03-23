@@ -512,6 +512,7 @@ router.get('/discover/:page', auth, async (req, res) => {
           }
           break;
         case 'Comment':
+          break; // skip for now
           let foundCommentParent = await Post.findById(entry.parentId);
 
           // comments is the current commend thread

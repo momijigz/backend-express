@@ -153,7 +153,10 @@ exports.publishPost = async (req, res, next) => {
 
     console.log('text: ', text);
     console.log('JSON.parse(text).location: ', JSON.parse(text).location);
-    const location = { type: 'Point', coordinates: [JSON.parse(text).location.lat, JSON.parse(text).location.lng] };
+    const location = {
+      type: 'Point',
+      coordinates: [JSON.parse(text).location.lat, JSON.parse(text).location.lng]
+    };
     posts.loc = location;
 
     posts.draft = false;
