@@ -57,7 +57,7 @@ const postModel = new Schema(
       created: { type: Date }, // when was order initiated
       updated: { type: Date }, // when was order updated
       dropoffEta: { type: Date }, // when was order was dropped off
-      notes: { type: String }, // any notes from order (missing items, etc)
+      notes: { type: String } // any notes from order (missing items, etc)
     },
     assignedUser: { type: Schema.Types.ObjectId, ref: 'User' },
     flagged: [{ type: Schema.Types.ObjectId, ref: 'User', required: true }], // other Users can flag a post if it violates, after a certain number, the flagged content is manually reviewed

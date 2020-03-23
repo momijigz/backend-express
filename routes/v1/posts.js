@@ -102,6 +102,31 @@ postRouter.put('/:postId/complete', auth, async (req, res) => {
       post.completed = true;
       post.endDate = new Date();
 
+      // optional params
+      if (req.body.method) {
+        post.trackingDetails.method = req.body.method;
+      }
+
+      if (req.body.customerId) {
+        post.trackingDetails.customerId = req.body.customerId;
+      }
+
+      if (req.body.created) {
+        post.trackingDetails.created = req.body.created;
+      }
+
+      if (req.body.deliveryId) {
+        post.trackingDetails.deliveryId = req.body.deliveryId;
+      }
+
+      if (req.body.dropoffEta) {
+        post.trackingDetails.dropoffEta = req.body.dropoffEta;
+      }
+
+      if (req.body.notes) {
+        post.trackingDetails.notes = req.body.notes;
+      }
+
       post.save();
 
       let postAuthor = await User.findById(post.authorId).exec();
@@ -121,6 +146,14 @@ postRouter.put('/:postId/claim', auth, async (req, res) => {
     .then(async post => {
       if (!post) {
         return res.status(400).json({ message: `invalid postId` });
+      }
+
+      if (post.completed) {
+        return res.status(400).json({ message: `task is already completed` });
+      }
+
+      if (post.assignedUser) {
+        return res.status(400).json({ message: `task is already assigned to a user - please try a different task` });
       }
 
       post.assignedUser = user._id;
@@ -146,15 +179,24 @@ postRouter.put('/:postId/unclaim', auth, async (req, res) => {
         return res.status(400).json({ message: `invalid postId` });
       }
 
-      post.assignedUser = undefined;
+      if (post.completed) {
+        return res.status(400).json({ message: `task is already completed` });
+      }
 
-      post.save();
+      if (post.assignedUser !== user._id) {
+        return res.status(400).json({ message: `you cannot unclaim a different user's task` });
+      } else {
+        // only if assigned user === the user
+        post.assignedUser = undefined;
 
-      let postAuthor = await User.findById(post.authorId).exec();
-
-      sendNotification(postAuthor, req.user, post, 'Unclaim');
-
-      return res.status(200).send(post);
+        post.save();
+  
+        let postAuthor = await User.findById(post.authorId).exec();
+  
+        sendNotification(postAuthor, req.user, post, 'Unclaim');
+  
+        return res.status(200).send(post);
+      }
     })
     .catch(err => {
       return res.status(401).send({ error: `Error when upvoting: ${err}` });
