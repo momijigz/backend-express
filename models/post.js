@@ -56,7 +56,7 @@ const postModel = new Schema(
       deliveryId: { type: String }, // optional for 3rd party vendors
       created: { type: Date }, // when was order initiated
       updated: { type: Date }, // when was order updated
-      dropoffEta: { type: Date }, // when was order was dropped off
+      dropoffEta: { type: String }, // string for the MVP
       notes: { type: String } // any notes from order (missing items, etc)
     },
     assignedUser: { type: Schema.Types.ObjectId, ref: 'User' },

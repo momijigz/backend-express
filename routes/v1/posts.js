@@ -153,7 +153,9 @@ postRouter.put('/:postId/claim', auth, async (req, res) => {
       }
 
       if (post.assignedUser) {
-        return res.status(400).json({ message: `task is already assigned to a user - please try a different task` });
+        return res
+          .status(400)
+          .json({ message: `task is already assigned to a user - please try a different task` });
       }
 
       post.assignedUser = user._id;
@@ -190,11 +192,11 @@ postRouter.put('/:postId/unclaim', auth, async (req, res) => {
         post.assignedUser = undefined;
 
         post.save();
-  
+
         let postAuthor = await User.findById(post.authorId).exec();
-  
+
         sendNotification(postAuthor, req.user, post, 'Unclaim');
-  
+
         return res.status(200).send(post);
       }
     })
