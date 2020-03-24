@@ -508,21 +508,23 @@ router.get('/discover/:page', auth, async (req, res) => {
         case 'Post':
           let query = {
             _id: entry.postId,
-            completed: false,
+            completed: false
             // assignedUser: undefined
           };
 
-          if (req.body.location) {
+          if (req.query.lng && req.query.lat) {
             query.loc = {
               $near: {
-              $maxDistance: req.body.distanceMeter ? Number(req.body.distanceMeter) : 1000, // default is 1000 M or 1KM
-              $geometry: {
-                type: "Point",
-                coordinates: req.body.location // needs to be an array [longitude, latitude]
+                $maxDistance: req.query.distanceMeter ? Number(req.query.distanceMeter) : 1000, // default is 1000 M or 1KM
+                $geometry: {
+                  type: 'Point',
+                  coordinates: [Number(req.query.lng), Number(req.query.lat)] // needs to be an array [longitude, latitude]
+                }
               }
-              }
-            }
+            };
           }
+
+          console.log('query: ', query);
 
           let foundPost = await Post.findOne(query);
           if (foundPost) {
@@ -836,8 +838,10 @@ router.get('/global/:page', auth, async (req, res) => {
             .exec();
 
           if (foundPost) {
-            let showDetails = req.user._id.toString() === foundPost.assignedUser._id.toString() || req.user._id.toString() === foundPost.authorId.toString();
-            
+            let showDetails =
+              req.user._id.toString() === foundPost.assignedUser._id.toString() ||
+              req.user._id.toString() === foundPost.authorId.toString();
+
             if (!showDetails) {
               foundPost.trackingDetails = undefined; // remove tracking details if neither creator nor fulfiller
             }

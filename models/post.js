@@ -3,18 +3,6 @@ const Schema = mongoose.Schema;
 const mongooseAlgolia = require('mongoose-algolia');
 const Comment = require(__dirname + '/comment');
 
-const pointSchema = new Schema({
-  type: {
-    type: String,
-    enum: ['Point'],
-    required: true
-  },
-  coordinates: {
-    type: [Number],
-    required: true
-  }
-});
-
 const postModel = new Schema(
   {
     authorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -48,7 +36,17 @@ const postModel = new Schema(
         }
       }
     ],
-    loc: pointSchema,
+    loc: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        required: true
+      },
+      coordinates: {
+        type: [Number],
+        required: true
+      },
+    },
     completed: { type: Boolean, required: true, default: false },
     trackingDetails: {
       method: { type: String }, // postmates, text, etc
