@@ -39,10 +39,10 @@ const postModel = new Schema(
     loc: {
       type: {
         type: String,
-        enum: ['Point'],
+        enum: ['Point']
       },
       coordinates: {
-        type: [Number],
+        type: [Number]
       }
     },
     completed: { type: Boolean, required: true, default: false },

@@ -10,6 +10,7 @@ const Follow = require(__dirname + '/../../models/follow');
 const Post = require(__dirname + '/../../models/post');
 const Notification = require(__dirname + '/../../models/notification');
 const rateLimit = require('express-rate-limit');
+const cache = require('memory-cache');
 const multiparty = require('multiparty');
 const fs = require('fs');
 const AWS = require('aws-sdk');
@@ -420,8 +421,14 @@ userRouter.put('/seen', auth, async (req, res) => {
   }
 });
 
+// can speed up this call
 userRouter.get('/', auth, async (req, res) => {
-  let notifications = await Notification.find({ to: req.user._id, seen: false })
+  let result = cache.get(req.user._id);
+
+  if (result) {
+    res.status(200).json(result);
+  } else {
+    let notifications = await Notification.find({ to: req.user._id, seen: false })
     .populate('to')
     .populate('from')
     .exec();
@@ -434,7 +441,7 @@ userRouter.get('/', auth, async (req, res) => {
 
   let draftsFeed = await Post.find({ draft: true, authorId: req.user._id }).exec();
 
-  res.status(200).json({
+  let returnObject = {
     username: req.user.username,
     email: req.user.email,
     createdAt: req.user.createdAt,
@@ -444,7 +451,12 @@ userRouter.get('/', auth, async (req, res) => {
     _id: req.user._id,
     notifications,
     message: 'success!'
-  });
+  };
+
+  cache.put(req.user._id, returnObject, 5 * 60 * 1000); // they update rates every 5 minutes
+
+  res.status(200).json(returnObject);
+  }
 });
 
 module.exports = userRouter;

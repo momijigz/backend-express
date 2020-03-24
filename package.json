@@ -31,6 +31,7 @@
     "express-validator": "^5.3.1",
     "fs": "0.0.1-security",
     "jsonwebtoken": "^8.5.1",
+    "memory-cache": "^0.2.0",
     "mongoolia": "^1.0.3",
     "mongoose": "^5.7.12",
     "mongoose-algolia": "^1.9.0",
