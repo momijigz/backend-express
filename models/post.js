@@ -40,11 +40,9 @@ const postModel = new Schema(
       type: {
         type: String,
         enum: ['Point'],
-        required: true
       },
       coordinates: {
         type: [Number],
-        required: true
       }
     },
     completed: { type: Boolean, required: true, default: false },

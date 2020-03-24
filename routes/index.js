@@ -524,8 +524,6 @@ router.get('/discover/:page', auth, async (req, res) => {
             };
           }
 
-          console.log('query: ', query);
-
           let foundPost = await Post.findOne(query);
           if (foundPost) {
             compiledNewsfeed.push(foundPost);
