@@ -506,11 +506,25 @@ router.get('/discover/:page', auth, async (req, res) => {
 
       switch (entry.type) {
         case 'Post':
-          let foundPost = await Post.findOne({
+          let query = {
             _id: entry.postId,
-            completed: false
+            completed: false,
             // assignedUser: undefined
-          });
+          };
+
+          if (req.body.location) {
+            query.loc = {
+              $near: {
+              $maxDistance: req.body.distanceMeter ? Number(req.body.distanceMeter) : 1000, // default is 1000 M or 1KM
+              $geometry: {
+                type: "Point",
+                coordinates: req.body.location // needs to be an array [longitude, latitude]
+              }
+              }
+            }
+          }
+
+          let foundPost = await Post.findOne(query);
           if (foundPost) {
             compiledNewsfeed.push(foundPost);
           }
@@ -793,14 +807,7 @@ router.get('/completed/:page', auth, async (req, res) => {
   }
 });
 
-let filters = [
-  'name',
-  'resetToken',
-  'verified',
-  'summary',
-  'password',
-  'tokens'
-];
+let filters = ['name', 'resetToken', 'verified', 'summary', 'password', 'tokens'];
 
 router.get('/global/:page', auth, async (req, res) => {
   try {
@@ -821,15 +828,20 @@ router.get('/global/:page', auth, async (req, res) => {
 
       switch (entry.type) {
         case 'Post':
-          let foundPost = await Post.findOne(
-            {
-              _id: entry.postId,
-              completed: true
-            }
-          )
+          let foundPost = await Post.findOne({
+            _id: entry.postId,
+            completed: true
+          })
             .populate('assignedUser', 'name username email karma createdAt profilePictureUrl')
             .exec();
+
           if (foundPost) {
+            let showDetails = req.user._id.toString() === foundPost.assignedUser._id.toString() || req.user._id.toString() === foundPost.authorId.toString();
+            
+            if (!showDetails) {
+              foundPost.trackingDetails = undefined; // remove tracking details if neither creator nor fulfiller
+            }
+
             compiledNewsfeed.push(foundPost);
           }
           break;

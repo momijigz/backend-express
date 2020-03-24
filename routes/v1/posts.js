@@ -95,7 +95,7 @@ postRouter.put('/:postId/complete', auth, async (req, res) => {
   const user = req.user;
   try {
     let post = await Post.findOne({ _id: req.params.postId })
-      .populate('assignedUser')
+      .populate('assignedUser', 'name ussername email karma createdAt profilePictureUrl')
       .exec();
     if (!post) {
       return res.status(400).json({ message: `invalid postId` });
