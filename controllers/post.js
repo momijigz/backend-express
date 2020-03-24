@@ -61,7 +61,7 @@ exports.createDraft = async (req, res, next) => {
       categories: categories.split(','),
       title,
       text,
-      loc: [location.lng, location.lat], // [longitude, latitude] 
+      loc: [location.lng, location.lat], // [longitude, latitude]
       authorId: req.user._id,
       username: req.user.username,
       draft: true,

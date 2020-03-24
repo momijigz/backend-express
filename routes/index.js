@@ -626,7 +626,7 @@ router.get('/ongoing/:page', auth, async (req, res) => {
           let foundPost = await Post.findOne({
             _id: entry.postId,
             completed: false,
-            assignedUser: entry.ownerId
+            assignedUser: req.user._id // assigned to the user authenticating
           });
           if (foundPost) {
             compiledNewsfeed.push(foundPost);
@@ -727,7 +727,7 @@ router.get('/completed/:page', auth, async (req, res) => {
           let foundPost = await Post.findOne({
             _id: entry.postId,
             completed: true,
-            assignedUser: entry.ownerId
+            assignedUser: req.user._id
           })
             .populate('assignedUser', 'name username email karma createdAt profilePictureUrl')
             .exec();
@@ -845,6 +845,8 @@ router.get('/global/:page', auth, async (req, res) => {
             if (!showDetails) {
               foundPost.trackingDetails = undefined; // remove tracking details if neither creator nor fulfiller
             }
+
+            console.log('foundPost: ', foundPost);
 
             compiledNewsfeed.push(foundPost);
           }
