@@ -45,7 +45,7 @@ const postModel = new Schema(
       coordinates: {
         type: [Number],
         required: true
-      },
+      }
     },
     completed: { type: Boolean, required: true, default: false },
     trackingDetails: {

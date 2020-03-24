@@ -54,10 +54,14 @@ exports.createDraft = async (req, res, next) => {
 
     const { categories, title, text } = req.body;
 
+    // parse lat, long from text location
+    let location = JSON.parse(text).location;
+
     const posts = await Post.create({
       categories: categories.split(','),
       title,
       text,
+      loc: [location.lng, location.lat], // [longitude, latitude] 
       authorId: req.user._id,
       username: req.user.username,
       draft: true,
