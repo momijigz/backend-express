@@ -9,6 +9,7 @@ const User = require(__dirname + '/../models/user');
 const Comment = require(__dirname + '/../models/comment');
 const Notification = require(__dirname + '/../models/notification');
 const auth = require(__dirname + '/../middlewares/auth');
+const optionalAuth = require(__dirname + '/../middlewares/optionalAuth');
 const algoliasearch = require('algoliasearch');
 const emoji = require('node-emoji');
 const client = algoliasearch(process.env.ALGOLIA_APP_ID, process.env.ALGOLIA_API_KEY);
@@ -487,7 +488,7 @@ router.get('/search', async (req, res) => {
   }
 });
 
-router.get('/discover/:page', auth, async (req, res) => {
+router.get('/discover/:page', async (req, res) => {
   try {
     const resPerPage = 10;
     const page = req.params.page || 1;
@@ -809,7 +810,7 @@ router.get('/completed/:page', auth, async (req, res) => {
 
 let filters = ['name', 'resetToken', 'verified', 'summary', 'password', 'tokens'];
 
-router.get('/global/:page', auth, async (req, res) => {
+router.get('/global/:page', optionalAuth, async (req, res) => {
   try {
     const resPerPage = 10;
     const page = req.params.page || 1;
@@ -836,9 +837,9 @@ router.get('/global/:page', auth, async (req, res) => {
             .exec();
 
           if (foundPost) {
-            let showDetails =
-              req.user._id.toString() === foundPost.assignedUser._id.toString() ||
-              req.user._id.toString() === foundPost.authorId.toString();
+            let showDetails = req.user ?
+              (req.user._id.toString() === foundPost.assignedUser._id.toString() ||
+              req.user._id.toString() === foundPost.authorId.toString()) : false;
 
             if (!showDetails) {
               foundPost.trackingDetails = undefined; // remove tracking details if neither creator nor fulfiller
