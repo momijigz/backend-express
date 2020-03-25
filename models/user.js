@@ -3,7 +3,7 @@ const uniqueValidator = require('mongoose-unique-validator');
 const jwt = require('jsonwebtoken');
 require('mongoose-type-url');
 const Schema = mongoose.Schema;
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const SALT_WORK_FACTOR = 10;
 const mongooseAlgolia = require('mongoose-algolia');
 
