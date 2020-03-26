@@ -23,7 +23,7 @@ const optionalAuth = async (req, res, next) => {
     if (token && token !== 'null') {
       const data = jwt.verify(token, process.env.JWT_KEY);
       const user = await User.findOne({ _id: data._id, 'tokens.token': token });
-  
+
       if (user) {
         if (data.exp < dateNow.getTime() / 1000) {
           throw new Error();

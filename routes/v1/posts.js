@@ -186,7 +186,7 @@ postRouter.put('/:postId/unclaim', auth, async (req, res) => {
         return res.status(400).json({ message: `task is already completed` });
       }
 
-      if (post.assignedUser !== user._id) {
+      if (post.assignedUser.toString() !== user._id.toString()) {
         return res.status(400).json({ message: `you cannot unclaim a different user's task` });
       } else {
         // only if assigned user === the user

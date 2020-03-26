@@ -837,9 +837,10 @@ router.get('/global/:page', optionalAuth, async (req, res) => {
             .exec();
 
           if (foundPost) {
-            let showDetails = req.user ?
-              (req.user._id.toString() === foundPost.assignedUser._id.toString() ||
-              req.user._id.toString() === foundPost.authorId.toString()) : false;
+            let showDetails = req.user
+              ? req.user._id.toString() === foundPost.assignedUser._id.toString() ||
+                req.user._id.toString() === foundPost.authorId.toString()
+              : false;
 
             if (!showDetails) {
               foundPost.trackingDetails = undefined; // remove tracking details if neither creator nor fulfiller
