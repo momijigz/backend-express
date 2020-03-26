@@ -488,6 +488,59 @@ router.get('/search', async (req, res) => {
   }
 });
 
+function getIndex(array, query) {
+  var index = null;
+
+  for (var i = 0; i < array.length; i++) {
+    if (array[i]._id.toString() === query.toString()) {
+      index = i;
+      break;
+    }
+  }
+  return index;
+}
+
+// return leaderboarrd
+router.get('/leaderboard', optionalAuth, async (req, res) => {
+  try {
+    let filters = {
+      resetToken: 0,
+      organization: 0,
+      verified: 0,
+      password: 0,
+      expert: 0,
+      sessionId: 0,
+      seenSubmitTutorial: 0,
+      welcomeTutorial: 0,
+      stripeCustomerId: 0,
+      url: 0,
+      balanceUSD: 0,
+      donations: 0,
+      tokens: 0
+    };
+
+    let sortedUsers = await User.find({}, filters)
+      .sort({ karma: -1 })
+      .exec();
+
+    let returnObject = {
+      leaderboard: sortedUsers
+    };
+
+    // if auth
+    if (req.user) {
+      console.log('req.user: ', req.user._id);
+      let userIndex = getIndex(sortedUsers, req.user._id);
+      returnObject['userRanking'] = userIndex;
+    }
+
+    return res.send(returnObject);
+  } catch (err) {
+    console.log('error: ', err);
+    return res.status(400).send({ message: 'error', detail: err });
+  }
+});
+
 router.get('/discover/:page', async (req, res) => {
   try {
     const resPerPage = 10;
