@@ -529,7 +529,6 @@ router.get('/leaderboard', optionalAuth, async (req, res) => {
 
     // if auth
     if (req.user) {
-      console.log('req.user: ', req.user._id);
       let userIndex = getIndex(sortedUsers, req.user._id);
       returnObject['userRanking'] = userIndex;
     }
