@@ -206,12 +206,12 @@ postRouter.put('/:postId/unclaim', auth, async (req, res) => {
     });
 });
 
-function antiSpam(user) {
+function antiSpam(user, author) {
   var diff = new Date() - new Date(user.createdAt);
   var diffdays = diff / 1000 / (60 * 60 * 24);
 
   // account must be 1 day old
-  if (Number(diffdays) < 1) {
+  if (Number(diffdays) < 1 || user._id.toString() === author._id.toString()) {
     return false;
   }
   return true;
@@ -225,15 +225,18 @@ postRouter.put('/:postId/vote-up', auth, async (req, res) => {
         return res.status(400).json({ message: `invalid postId` });
       }
 
+      let previous = post.downVotes.length;
+
       post.downVotes.pull(user._id);
       post.upVotes = addToSet(post.upVotes, user._id);
       post.voteTotal = post.upVotes.length - post.downVotes.length;
 
       post.save();
 
+      let after = post.downVotes.length;
       let postAuthor = await User.findById(post.authorId).exec();
 
-      if (antiSpam(user)) {
+      if (after > previous && antiSpam(user, postAuthor)) {
         postAuthor.karma = postAuthor.karma + 1;
         await postAuthor.save();
       }
@@ -254,14 +257,19 @@ postRouter.put('/:postId/vote-down', auth, async (req, res) => {
       if (!post) {
         return res.status(400).json({ message: `invalid postId` });
       }
+
+      let previous = post.downVotes.length;
+
       post.upVotes.pull(user._id);
       post.downVotes = addToSet(post.downVotes, user._id);
       post.voteTotal = post.upVotes.length - post.downVotes.length;
 
       post.save();
+
+      let after = post.downVotes.length;
       let postAuthor = await User.findById(post.authorId).exec();
 
-      if (antiSpam(user)) {
+      if (after > previous && antiSpam(user, postAuthor)) {
         postAuthor.karma = postAuthor.karma > 1 ? postAuthor.karma - 1 : 0;
         await postAuthor.save();
       }

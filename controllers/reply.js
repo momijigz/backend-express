@@ -9,12 +9,12 @@ const mongoose = require('mongoose');
 var io = require(__dirname + '/../mysockets');
 const sendNotification = require(__dirname + '/../util/notification');
 
-function antiSpam(user) {
+function antiSpam(user, author) {
   var diff = new Date() - new Date(user.createdAt);
   var diffdays = diff / 1000 / (60 * 60 * 24);
 
   // account must be 1 day old
-  if (Number(diffdays) < 1) {
+  if (Number(diffdays) < 1 || user._id.toString() === author._id.toString()) {
     return false;
   }
   return true;
@@ -192,6 +192,8 @@ exports.upvote = async (req, res, next) => {
           return res.status(400).json({ message: `invalid postId or commentId` });
         }
 
+        let previous = comment.upVotes;
+
         comment.downVotes = removeFromSet(comment.downVotes, user._id);
         comment.upVotes = addToSet(comment.upVotes, user._id);
         comment.voteTotal = comment.upVotes.length - comment.downVotes.length;
@@ -205,11 +207,12 @@ exports.upvote = async (req, res, next) => {
         post.markModified('comments');
         post.save();
 
+        let after = comment.upVotes;
         let commentWithParent = await populateParent(comment._id, postId, comment);
 
         let commentAuthor = await User.findOne({ username: comment.username });
 
-        if (antiSpam(user)) {
+        if (after > previous && antiSpam(user, commentAuthor)) {
           commentAuthor.karma = commentAuthor.karma + 1;
           await commentAuthor.save();
         }
@@ -247,6 +250,7 @@ exports.downvote = async (req, res, next) => {
           return res.status(400).json({ message: `invalid postId or commentId` });
         }
 
+        let previous = comment.downVotes;
         comment.downVotes = addToSet(comment.downVotes, user._id);
         comment.upVotes = removeFromSet(comment.upVotes, user._id);
         comment.voteTotal = comment.upVotes.length - comment.downVotes.length;
@@ -260,11 +264,12 @@ exports.downvote = async (req, res, next) => {
         post.markModified('comments');
         post.save();
 
+        let after = comment.downVotes;
         let commentWithParent = await populateParent(comment._id, postId, comment);
 
         let commentAuthor = await User.findOne({ username: comment.username });
 
-        if (antiSpam(user)) {
+        if (after > previous && antiSpam(user, commentAuthor)) {
           commentAuthor.karma = commentAuthor.karma > 1 ? commentAuthor.karma - 1 : 0;
           await commentAuthor.save();
         }
