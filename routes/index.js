@@ -12,6 +12,9 @@ const auth = require(__dirname + '/../middlewares/auth');
 const optionalAuth = require(__dirname + '/../middlewares/optionalAuth');
 const algoliasearch = require('algoliasearch');
 const emoji = require('node-emoji');
+const accountSid = 'ACad0b46ce3e3246e36d9ba0be4587ef12';
+const authToken = process.env.TWILIO_AUTH;
+const twilio = require('twilio')(accountSid, authToken);
 const client = algoliasearch(process.env.ALGOLIA_APP_ID, process.env.ALGOLIA_API_KEY);
 
 const userIndex = client.initIndex(`user_${process.env.NODE_ENV}`);
@@ -524,13 +527,14 @@ router.get('/leaderboard', optionalAuth, async (req, res) => {
       .exec();
 
     let returnObject = {
-      leaderboard: sortedUsers
+      leaderboard: sortedUsers,
+      userRanking: undefined
     };
 
     // if auth
     if (req.user) {
       let userIndex = getIndex(sortedUsers, req.user._id);
-      returnObject['userRanking'] = userIndex;
+      returnObject.userRanking = userIndex;
     }
 
     return res.send(returnObject);
@@ -539,6 +543,55 @@ router.get('/leaderboard', optionalAuth, async (req, res) => {
     return res.status(400).send({ message: 'error', detail: err });
   }
 });
+
+router.get('/twilio/webhooks/call', async (req, res) => {
+  try {
+  } catch (err) {
+    console.log('error: ', err);
+    return res.status(400).send({ message: 'error', detail: err });
+  }
+});
+
+const postSlackSuccess = async (text, channel = 'phone-support') => {
+  console.log(text); // important success resp logging
+  let url = 'https://slack.com/api/chat.postMessage';
+  try {
+    let response = await axios.get(url, {
+      params: {
+        token: process.env.SLACK_TOKEN,
+        channel: channel ? channel : successChannel,
+        text: text,
+        username: 'twilio-webhooks',
+        pretty: 1,
+        mrkdwn: true
+      }
+    });
+  } catch (err) {
+    // TODO: sentry capture error/exception as backup; timeout
+    console.log(err);
+  }
+};
+
+router.get('/twilio/webhooks', async (req, res) => {
+  try {
+    await postSlackSuccess(req.body);
+    res.send('ok');
+  } catch (err) {
+    console.log('error: ', err);
+    return res.status(400).send({ message: 'error', detail: err });
+  }
+});
+
+async function sendMessage(number, message) {
+  try {
+    let result = await twilio.messages.create({ body: message, from: '+14154803044', to: `+${number}` })
+    console.log(chalk.green('result: ', result));
+  } catch (err) {
+    console.log(chalk.red('error: ', err));
+  }
+}
+
+// sendMessage('17876495339', 'hello world');
 
 router.get('/discover/:page', async (req, res) => {
   try {
