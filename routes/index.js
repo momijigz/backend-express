@@ -544,7 +544,7 @@ router.get('/leaderboard', optionalAuth, async (req, res) => {
   }
 });
 
-router.get('/twilio/webhooks/call', async (req, res) => {
+router.post('/twilio/webhooks/call', async (req, res) => {
   try {
   } catch (err) {
     console.log('error: ', err);
@@ -572,7 +572,7 @@ const postSlackSuccess = async (text, channel = 'phone-support') => {
   }
 };
 
-router.get('/twilio/webhooks', async (req, res) => {
+router.post('/twilio/webhooks', async (req, res) => {
   try {
     await postSlackSuccess(req.body);
     res.send('ok');
@@ -586,7 +586,7 @@ async function sendMessage(number, message) {
   try {
     let result = await twilio.messages.create({
       body: message,
-      from: '+14154803044',
+      from: '14159644261',
       to: `+${number}`
     });
     console.log(chalk.green('result: ', result));
@@ -595,7 +595,7 @@ async function sendMessage(number, message) {
   }
 }
 
-// sendMessage('17876495339', 'hello world');
+sendMessage('17876495339', 'hi charlotte i can see you');
 
 router.get('/discover/:page', async (req, res) => {
   try {
