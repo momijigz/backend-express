@@ -9,6 +9,17 @@ const mongoose = require('mongoose');
 var io = require(__dirname + '/../mysockets');
 const sendNotification = require(__dirname + '/../util/notification');
 
+function antiSpam(user) {
+  var diff = new Date - new Date(user.createdAt);
+  var diffdays = diff / 1000 / (60 * 60 * 24);
+
+  // account must be 1 day old
+  if (Number(diffdays) < 1) {
+    return false;
+  }
+  return true;
+}
+
 const findComment = (id, comments) => {
   if (comments.length > 0) {
     for (var index = 0; index < comments.length; index++) {
@@ -198,6 +209,11 @@ exports.upvote = async (req, res, next) => {
 
         let commentAuthor = await User.findOne({ username: comment.username });
 
+        if (antiSpam(user)) {
+          commentAuthor.karma = commentAuthor.karma + 1;
+          await commentAuthor.save();
+        }
+
         sendNotification(commentAuthor, user, comment, 'Upvote');
 
         return res.status(200).send(commentWithParent);
@@ -247,6 +263,11 @@ exports.downvote = async (req, res, next) => {
         let commentWithParent = await populateParent(comment._id, postId, comment);
 
         let commentAuthor = await User.findOne({ username: comment.username });
+
+        if (antiSpam(user)) {
+          commentAuthor.karma = commentAuthor.karma > 1 ? commentAuthor.karma - 1 : 0;
+          await commentAuthor.save();
+        }
 
         sendNotification(commentAuthor, user, comment, 'Downvote');
 

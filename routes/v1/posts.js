@@ -206,6 +206,17 @@ postRouter.put('/:postId/unclaim', auth, async (req, res) => {
     });
 });
 
+function antiSpam(user) {
+  var diff = new Date - new Date(user.createdAt);
+  var diffdays = diff / 1000 / (60 * 60 * 24);
+
+  // account must be 1 day old
+  if (Number(diffdays) < 1) {
+    return false;
+  }
+  return true;
+}
+
 postRouter.put('/:postId/vote-up', auth, async (req, res) => {
   const user = req.user;
   Post.findById(req.params.postId)
@@ -221,6 +232,11 @@ postRouter.put('/:postId/vote-up', auth, async (req, res) => {
       post.save();
 
       let postAuthor = await User.findById(post.authorId).exec();
+
+      if (antiSpam(user)) {
+        postAuthor.karma = postAuthor.karma + 1;
+        await postAuthor.save();
+      }
 
       sendNotification(postAuthor, req.user, post, 'Upvote');
 
@@ -244,6 +260,11 @@ postRouter.put('/:postId/vote-down', auth, async (req, res) => {
 
       post.save();
       let postAuthor = await User.findById(post.authorId).exec();
+
+      if (antiSpam(user)) {
+        postAuthor.karma = postAuthor.karma > 1 ? postAuthor.karma - 1 : 0;
+        await postAuthor.save();
+      }
 
       sendNotification(postAuthor, req.user, post, 'Downvote');
 
