@@ -584,7 +584,11 @@ router.get('/twilio/webhooks', async (req, res) => {
 
 async function sendMessage(number, message) {
   try {
-    let result = await twilio.messages.create({ body: message, from: '+14154803044', to: `+${number}` })
+    let result = await twilio.messages.create({
+      body: message,
+      from: '+14154803044',
+      to: `+${number}`
+    });
     console.log(chalk.green('result: ', result));
   } catch (err) {
     console.log(chalk.red('error: ', err));
