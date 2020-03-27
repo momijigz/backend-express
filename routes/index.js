@@ -578,7 +578,7 @@ router.post('/twilio/webhooks', async (req, res) => {
       await postSlackSuccess(
         `${req.body.Body}`,
         'phone-support',
-        `${req.body.From} (${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()}`
+        `${req.body.From} (${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()})`
       );
     }
     res.send('ok');
