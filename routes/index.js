@@ -559,7 +559,7 @@ const postSlackSuccess = async (text, channel = 'phone-support', botName = 'twil
     let response = await axios.get(url, {
       params: {
         token: process.env.SLACK_TOKEN,
-        channel: channel ? channel : successChannel,
+        channel: channel,
         text: text,
         username: botName,
         pretty: 1,
@@ -576,13 +576,9 @@ router.post('/twilio/webhooks', async (req, res) => {
   try {
     if (req.body.Body) {
       await postSlackSuccess(
-        `*From:* \`${
-          req.body.From
-        }\` (${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()}, ${
-          req.body.FromZip
-        })\n\nMessage: \`${req.body.Body}\``,
+        `${req.body.Body}`,
         'phone-support',
-        req.body.From
+        `${req.body.From} (${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()}`
       );
     }
     res.send('ok');
