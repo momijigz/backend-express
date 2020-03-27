@@ -580,8 +580,10 @@ router.post('/twilio/webhooks', async (req, res) => {
           req.body.From
         }\` (${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()}, ${
           req.body.FromZip
-        })\n\nMessage: \`${req.body.Body}\``
-      , botName = req.body.From);
+        })\n\nMessage: \`${req.body.Body}\``,
+        'phone-support',
+        req.body.From
+      );
     }
     res.send('ok');
   } catch (err) {
