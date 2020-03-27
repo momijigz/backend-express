@@ -575,7 +575,11 @@ const postSlackSuccess = async (text, channel = 'phone-support') => {
 router.post('/twilio/webhooks', async (req, res) => {
   try {
     if (req.body.Body) {
-      await postSlackSuccess(`\`From: ${req.body.From} (${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase}, ${req.body.FromZip})\`\n\n\`Message: ${req.body.Body}\``);
+      await postSlackSuccess(
+        `\`From: ${req.body.From} (${req.body.FromCity.toLowerCase()}, ${
+          req.body.FromState.toLowerCase
+        }, ${req.body.FromZip})\`\n\n\`Message: ${req.body.Body}\``
+      );
     }
     res.send('ok');
   } catch (err) {
@@ -597,7 +601,7 @@ async function sendMessage(number, message) {
   }
 }
 
-sendMessage('17876495339', 'hi charlotte i can see you');
+// sendMessage('17876495339', 'hi charlotte i can see you');
 
 router.get('/discover/:page', async (req, res) => {
   try {
