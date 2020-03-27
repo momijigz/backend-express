@@ -552,7 +552,7 @@ router.post('/twilio/webhooks/call', async (req, res) => {
   }
 });
 
-const postSlackSuccess = async (text, channel = 'phone-support') => {
+const postSlackSuccess = async (text, channel = 'phone-support', botName = 'twilio-webhooks') => {
   console.log(text); // important success resp logging
   let url = 'https://slack.com/api/chat.postMessage';
   try {
@@ -561,7 +561,7 @@ const postSlackSuccess = async (text, channel = 'phone-support') => {
         token: process.env.SLACK_TOKEN,
         channel: channel ? channel : successChannel,
         text: text,
-        username: 'twilio-webhooks',
+        username: botName,
         pretty: 1,
         mrkdwn: true
       }
@@ -581,7 +581,7 @@ router.post('/twilio/webhooks', async (req, res) => {
         }\` (${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()}, ${
           req.body.FromZip
         })\n\nMessage: \`${req.body.Body}\``
-      );
+      , botName = req.body.From);
     }
     res.send('ok');
   } catch (err) {
