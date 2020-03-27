@@ -311,29 +311,58 @@ userRouter.get(
 );
 
 userRouter.get('/:id', userController.validate('publicAuth'), publicAuth, async (req, res) => {
-  let postFeed = await Post.find({
-    authorId: req.user._id,
-    published: true,
-    draft: false
-  })
-    .sort({ updatedAt: -1 })
-    .exec();
-  let commentFeed = await Comment.find({ authorId: req.user._id }).exec();
-  let followers = await Follow.find({ leaderId: req.user._id }).exec();
-  let following = await Follow.find({ followerId: req.user._id }).exec();
+  let postFeed = cache.get(`postFeed_${req.user._id}`);
+  let followers = cache.get(`followers_${req.user._id}`);
+  let following = cache.get(`following_${req.user._id}`);
 
-  let upvotePosts = await Post.find({ upVotes: req.user._id })
-    .sort({ createdAt: -1 })
-    .exec();
-  let downvotePosts = await Post.find({ downVotes: req.user._id })
-    .sort({ createdAt: -1 })
-    .exec();
-  let upvoteComments = await Comment.find({ upVotes: req.user._id })
-    .sort({ createdAt: -1 })
-    .exec();
-  let downvoteComments = await Comment.find({ downVotes: req.user._id })
-    .sort({ createdAt: -1 })
-    .exec();
+  if (!postFeed || !followers || !following) {
+    postFeed = await Post.find({
+      authorId: req.user._id,
+      published: true
+    })
+      .select({
+        createdAt: 1,
+        updatedAt: 1,
+        upVotes: 1,
+        downVotes: 1,
+        text: 1,
+        title: 1,
+        categories: 1
+      })
+      .limit(10)
+      .exec();
+
+    followers = await Follow.find({ leaderId: req.user._id }).exec();
+    following = await Follow.find({ followerId: req.user._id }).exec();
+
+    cache.put(`postFeed_${req.user._id}`, postFeed, 10 * 60 * 1000);
+    cache.put(`followers_${req.user._id}`, followers, 10 * 60 * 1000);
+    cache.put(`following_${req.user._id}`, following, 10 * 60 * 1000);
+  } else {
+    console.log('cached');
+  }
+
+  const [
+    commentFeed,
+    upvotePosts,
+    downvotePosts,
+    upvoteComments,
+    downvoteComments
+  ] = await Promise.all([
+    await Comment.find({ authorId: req.user._id }).exec(),
+    await Post.find({ upVotes: req.user._id })
+      .sort({ createdAt: -1 })
+      .exec(),
+    await Post.find({ downVotes: req.user._id })
+      .sort({ createdAt: -1 })
+      .exec(),
+    await Comment.find({ upVotes: req.user._id })
+      .sort({ createdAt: -1 })
+      .exec(),
+    await Comment.find({ downVotes: req.user._id })
+      .sort({ createdAt: -1 })
+      .exec()
+  ]);
 
   let upvotesFeed = upvotePosts.concat(upvoteComments);
   let downvotesFeed = downvotePosts.concat(downvoteComments);
@@ -347,6 +376,7 @@ userRouter.get('/:id', userController.validate('publicAuth'), publicAuth, async 
     _id: req.user._id,
     name: req.user.name,
     summary: req.user.summary,
+    karma: req.user.karma,
     email: req.user.email,
     username: req.user.username,
     profilePictureUrl: req.user.profilePictureUrl,

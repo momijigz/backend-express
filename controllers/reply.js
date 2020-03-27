@@ -10,7 +10,7 @@ var io = require(__dirname + '/../mysockets');
 const sendNotification = require(__dirname + '/../util/notification');
 
 function antiSpam(user) {
-  var diff = new Date - new Date(user.createdAt);
+  var diff = new Date() - new Date(user.createdAt);
   var diffdays = diff / 1000 / (60 * 60 * 24);
 
   // account must be 1 day old
