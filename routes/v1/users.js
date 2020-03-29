@@ -101,7 +101,7 @@ function generateInlineHash(user) {
 
 var upload = multer({
   fileFilter: function(req, file, cb) {
-    var filetypes = /jpeg|jpg|png|svg/;
+    var filetypes = /jpeg|jpg|png|svg|gif/;
     var mimetype = filetypes.test(file.mimetype);
     var extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 
