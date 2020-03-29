@@ -387,7 +387,9 @@ exports.resetPassword = async (req, res, next) => {
       from: 'noreply@givingtree.com',
       subject: `Your Password Reset Instructions`,
       html: Mustache.render(resetPassword, {
-        url: `${PROD ? 'https://api.givingtreeproject.org' : 'http://localhost:3001'}/reset-password/${token}`,
+        url: `${
+          PROD ? 'https://api.givingtreeproject.org' : 'http://localhost:3001'
+        }/reset-password/${token}`,
         date: new Date()
       })
     };
