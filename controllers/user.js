@@ -388,7 +388,7 @@ exports.resetPassword = async (req, res, next) => {
       subject: `Your Password Reset Instructions`,
       html: Mustache.render(resetPassword, {
         url: `${
-          PROD ? 'https://givingtreeproject.org' : 'http://localhost:3001'
+          PROD ? 'https://www.givingtreeproject.org' : 'http://localhost:3001'
         }/reset-password/${token}`,
         date: new Date()
       })
