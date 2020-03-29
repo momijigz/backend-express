@@ -313,17 +313,22 @@ userRouter.get(
   }
 );
 
-userRouter.get('/:id/pictures', userController.validate('publicAuth'), publicAuth, async (req, res) => {
-  let user = {
-    message: 'success!',
-    _id: req.user._id,
-    username: req.user.username,
-    profilePictureUrl: req.user.profilePictureUrl,
-    headerPictureUrl: req.user.headerPictureUrl,
-  };
+userRouter.get(
+  '/:id/pictures',
+  userController.validate('publicAuth'),
+  publicAuth,
+  async (req, res) => {
+    let user = {
+      message: 'success!',
+      _id: req.user._id,
+      username: req.user.username,
+      profilePictureUrl: req.user.profilePictureUrl,
+      headerPictureUrl: req.user.headerPictureUrl
+    };
 
-  return res.send(user);
-});
+    return res.send(user);
+  }
+);
 
 userRouter.get('/:id', userController.validate('publicAuth'), publicAuth, async (req, res) => {
   let postFeed = cache.get(`postFeed_${req.user._id}`);

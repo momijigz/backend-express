@@ -14,7 +14,9 @@ const getPosts = () => {
 };
 
 const getPost = id => {
-  return Post.findOne({ _id: id }).populate('authorId');
+  return Post.findOne({ _id: id })
+    .populate('authorId')
+    .exec();
 };
 
 const getDraft = (id, user) => {
@@ -25,20 +27,23 @@ const removePost = (_id, user) => {
   return Post.remove({ _id, author: user });
 };
 
-postRouter.get('/:id', (req, res) => {
-  const id = req.params.id;
+postRouter.get('/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
 
-  getPost(id)
-    .then(post => {
-      if (!post) {
-        return res.status(401).send({ message: `Post doesn't exist anymore` });
-      }
+    let post = await Post.findOne({ _id: id })
+      .populate('authorId')
+      .exec();
+    if (!post) {
+      return res.status(401).send({ message: `Post doesn't exist anymore` });
+    }
 
-      return res.json(post);
-    })
-    .catch(err => {
-      res.status(401).send({ message: `Error finding post: ${err}` });
-    });
+    console.log('post: ', post);
+
+    return res.json(post);
+  } catch (err) {
+    res.status(401).send({ message: `Error finding post: ${err}` });
+  }
 });
 
 postRouter.get('/draft/:id', auth, (req, res) => {

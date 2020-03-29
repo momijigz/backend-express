@@ -146,7 +146,7 @@ router.get('/refresh/:postId', async (req, res) => {
     // pull extra information about posts
     switch (entry.type) {
       case 'Post':
-        let foundPost = await Post.findOne({ _id: entry.postId, draft: false, published: true });
+        let foundPost = await Post.findOne({ _id: entry.postId, draft: false, published: true }).populate('authorId', 'name username email karma createdAt profileVersion profilePictureUrl').exec();
         if (foundPost) {
           compiledNewsfeed.push(foundPost);
         } else {
@@ -640,7 +640,7 @@ router.get('/discover/:page', async (req, res) => {
             };
           }
 
-          let foundPost = await Post.findOne(query);
+          let foundPost = await Post.findOne(query).populate('authorId', 'name username email karma createdAt profileVersion profilePictureUrl').exec();
           if (foundPost) {
             compiledNewsfeed.push(foundPost);
           }
@@ -741,7 +741,7 @@ router.get('/ongoing/:page', auth, async (req, res) => {
             _id: entry.postId,
             completed: false,
             assignedUser: req.user._id // assigned to the user authenticating
-          });
+          }).populate('authorId', 'name username email karma createdAt profileVersion profilePictureUrl').exec();
           if (foundPost) {
             compiledNewsfeed.push(foundPost);
           }
@@ -843,7 +843,7 @@ router.get('/completed/:page', auth, async (req, res) => {
             completed: true,
             assignedUser: req.user._id
           })
-            .populate('assignedUser', 'name username email karma createdAt profilePictureUrl')
+            .populate('assignedUser', 'name username email karma createdAt profileVersion profilePictureUrl')
             .exec();
 
           if (foundPost) {
@@ -948,7 +948,8 @@ router.get('/global/:page', optionalAuth, async (req, res) => {
             _id: entry.postId,
             completed: true
           })
-            .populate('assignedUser', 'name username email karma createdAt profilePictureUrl')
+            .populate('authorId', 'name username email karma createdAt profileVersion profilePictureUrl')
+            .populate('assignedUser', 'name username email karma createdAt profileVersion profilePictureUrl')
             .exec();
 
           if (foundPost) {
