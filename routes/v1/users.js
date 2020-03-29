@@ -492,6 +492,7 @@ userRouter.get('/', auth, async (req, res) => {
 
     let returnObject = {
       username: req.user.username,
+      name: req.user.name,
       profileVersion: req.user.profileVersion,
       headerVersion: req.user.headerVersion,
       email: req.user.email,

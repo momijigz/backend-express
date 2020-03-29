@@ -65,7 +65,7 @@ postRouter.get('/draft/:id', auth, (req, res) => {
     });
 });
 
-postRouter.delete('/:postId', postController.validate('deletePost'), postController.deletePost);
+postRouter.delete('/:postId', auth, postController.validate('deletePost'), postController.deletePost);
 
 postRouter.post('/new', auth, postController.validate('createDraft'), postController.createDraft);
 

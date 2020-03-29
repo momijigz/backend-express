@@ -21,8 +21,8 @@ exports.deletePost = async (req, res, next) => {
       return res.status(422).json({ message: `postId ${postId} doesn't exist` });
     }
 
-    let posts = await Post.findOne({ _id: postId });
-    let newsfeed = await Newsfeed.findOne({ postId: postId, deleted: false });
+    let posts = await Post.findOne({ _id: postId, authorId: req.user._id });
+    let newsfeed = await Newsfeed.findOne({ postId: postId, ownerId: req.user._id, deleted: false });
 
     if (posts) {
       posts.remove();
