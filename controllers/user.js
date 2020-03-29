@@ -7,7 +7,9 @@ const Newsfeed = require(__dirname + '/../models/newsfeed');
 const Follow = require(__dirname + '/../models/follow');
 const sgMail = require('@sendgrid/mail');
 const withdrawMethod = require(__dirname + '/../models/withdrawalMethod');
-const cache = require('memory-cache');
+const Mustache = require('mustache');
+const fs = require('fs');
+const resetPassword = fs.readFileSync(__dirname + '/../templates/reset-password.hjs', 'utf-8');
 const stripe_secret_key = PROD ? process.env.STRIPE_SECRET : process.env.STRIPE_SECRET_SANDBOX;
 const stripe = require('stripe')(stripe_secret_key);
 var schema = new passwordValidator();
@@ -383,8 +385,11 @@ exports.resetPassword = async (req, res, next) => {
     const msg = {
       to: user.email.toLowerCase(),
       from: 'noreply@givingtree.com',
-      subject: `Your Password Reset Instructions [${new Date()}]`,
-      text: `Hello!\n\nWe've gotten a request to reset your password.\n\nThe reset link in http://localhost:3001/reset-password/${token}\n\nIf this wasn't you, please email support@givingtree.com immedietly.\n\nYour friends at Giving Tree.`
+      subject: `Your Password Reset Instructions`,
+      html: Mustache.render(resetPassword, {
+        url: `${PROD ? 'https://api.givingtreeproject.org' : 'http://localhost:3001'}/reset-password/${token}`,
+        date: new Date()
+      })
     };
 
     await sgMail.send(msg);
