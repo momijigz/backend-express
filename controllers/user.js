@@ -7,6 +7,7 @@ const Newsfeed = require(__dirname + '/../models/newsfeed');
 const Follow = require(__dirname + '/../models/follow');
 const sgMail = require('@sendgrid/mail');
 const withdrawMethod = require(__dirname + '/../models/withdrawalMethod');
+const cache = require('memory-cache');
 const stripe_secret_key = PROD ? process.env.STRIPE_SECRET : process.env.STRIPE_SECRET_SANDBOX;
 const stripe = require('stripe')(stripe_secret_key);
 var schema = new passwordValidator();
@@ -140,6 +141,9 @@ exports.follow = async (req, res, next) => {
       email: foundUser.email,
       username: foundUser.username,
       verified: foundUser.verified,
+      karma: foundUser.karma,
+      profileVersion: foundUser.profileVersion || 0,
+      headerVersion: foundUser.headerVersion || 0,
       profilePictureUrl: foundUser.profilePictureUrl,
       headerPictureUrl: foundUser.headerPictureUrl,
       posts: postFeed,
@@ -166,7 +170,6 @@ exports.unfollow = async (req, res, next) => {
     }
 
     const userId = req.params.userId;
-    console.log('unfollowing: ', userId);
     await Follow.findOne({
       followerId: req.user._id,
       leaderId: userId
@@ -188,6 +191,9 @@ exports.unfollow = async (req, res, next) => {
       email: foundUser.email,
       username: foundUser.username,
       verified: foundUser.verified,
+      karma: foundUser.karma,
+      profileVersion: foundUser.profileVersion || 0,
+      headerVersion: foundUser.headerVersion || 0,
       profilePictureUrl: foundUser.profilePictureUrl,
       headerPictureUrl: foundUser.headerPictureUrl,
       posts: postFeed,

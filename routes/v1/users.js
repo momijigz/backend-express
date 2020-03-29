@@ -64,18 +64,19 @@ const BUCKET_NAME = 'giving-tree/user';
 
 function generateHash(user) {
   let username = user.username;
+  let version = (user.profileVersion || 0) + 1; // 0 is default
   const secret = 'givingtree';
   const hash = require('crypto')
     .createHmac('sha256', secret)
     .update(username.toLowerCase())
     .digest('hex');
 
-  return `${hash}`;
+  return `${hash}?ver=${version}`;
 }
 
 function generateHashHeader(user) {
   let username = user.username;
-  console.log('header: ', user.username);
+  let version = (user.headerVersion || 0) + 1; // 0 is default
   let currentDate = new Date().toString();
   const secret = 'givingtree';
   const hash = require('crypto')
@@ -83,7 +84,7 @@ function generateHashHeader(user) {
     .update(username.toLowerCase() + currentDate)
     .digest('hex');
 
-  return `headers/${hash}`;
+  return `headers/${hash}?ver=${version}`;
 }
 
 function generateInlineHash(user) {
@@ -162,6 +163,7 @@ userRouter.put(
       if (req.files.image) {
         if (req.files.image[0].location) {
           req.user.profilePictureUrl = req.files.image[0].location;
+          req.user.profileVersion = (req.user.profileVersion || 0) + 1;
           await req.user.save();
         }
       }
@@ -169,6 +171,7 @@ userRouter.put(
       if (req.files.header) {
         if (req.files.header[0].location) {
           req.user.headerPictureUrl = req.files.header[0].location;
+          req.user.headerVersion = (req.user.headerVersion || 0) + 1;
           await req.user.save();
         }
       }
@@ -310,12 +313,22 @@ userRouter.get(
   }
 );
 
+userRouter.get('/:id/pictures', userController.validate('publicAuth'), publicAuth, async (req, res) => {
+  let user = {
+    message: 'success!',
+    _id: req.user._id,
+    username: req.user.username,
+    profilePictureUrl: req.user.profilePictureUrl,
+    headerPictureUrl: req.user.headerPictureUrl,
+  };
+
+  return res.send(user);
+});
+
 userRouter.get('/:id', userController.validate('publicAuth'), publicAuth, async (req, res) => {
   let postFeed = cache.get(`postFeed_${req.user._id}`);
-  let followers = cache.get(`followers_${req.user._id}`);
-  let following = cache.get(`following_${req.user._id}`);
 
-  if (!postFeed || !followers || !following) {
+  if (!postFeed) {
     postFeed = await Post.find({
       authorId: req.user._id,
       published: true
@@ -332,12 +345,7 @@ userRouter.get('/:id', userController.validate('publicAuth'), publicAuth, async 
       .limit(10)
       .exec();
 
-    followers = await Follow.find({ leaderId: req.user._id }).exec();
-    following = await Follow.find({ followerId: req.user._id }).exec();
-
     cache.put(`postFeed_${req.user._id}`, postFeed, 10 * 60 * 1000);
-    cache.put(`followers_${req.user._id}`, followers, 10 * 60 * 1000);
-    cache.put(`following_${req.user._id}`, following, 10 * 60 * 1000);
   } else {
     console.log('cached');
   }
@@ -347,7 +355,9 @@ userRouter.get('/:id', userController.validate('publicAuth'), publicAuth, async 
     upvotePosts,
     downvotePosts,
     upvoteComments,
-    downvoteComments
+    downvoteComments,
+    followers,
+    following
   ] = await Promise.all([
     await Comment.find({ authorId: req.user._id }).exec(),
     await Post.find({ upVotes: req.user._id })
@@ -361,7 +371,9 @@ userRouter.get('/:id', userController.validate('publicAuth'), publicAuth, async 
       .exec(),
     await Comment.find({ downVotes: req.user._id })
       .sort({ createdAt: -1 })
-      .exec()
+      .exec(),
+    await Follow.find({ leaderId: req.user._id }).exec(),
+    await Follow.find({ followerId: req.user._id }).exec()
   ]);
 
   let upvotesFeed = upvotePosts.concat(upvoteComments);
@@ -379,6 +391,8 @@ userRouter.get('/:id', userController.validate('publicAuth'), publicAuth, async 
     karma: req.user.karma,
     email: req.user.email,
     username: req.user.username,
+    profileVersion: req.user.profileVersion || 0,
+    headerVersion: req.user.headerVersion || 0,
     profilePictureUrl: req.user.profilePictureUrl,
     headerPictureUrl: req.user.headerPictureUrl,
     verified: req.user.verified,
@@ -473,6 +487,8 @@ userRouter.get('/', auth, async (req, res) => {
 
     let returnObject = {
       username: req.user.username,
+      profileVersion: req.user.profileVersion,
+      headerVersion: req.user.headerVersion,
       email: req.user.email,
       createdAt: req.user.createdAt,
       drafts: draftsFeed,

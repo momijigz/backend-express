@@ -26,6 +26,8 @@ const userModel = new Schema(
     stripeCustomerId: { type: String, unique: true },
     url: { type: mongoose.SchemaTypes.Url },
     balanceUSD: { type: Number, default: 0 },
+    profileVersion: { type: Number, default: 0 }, // every time photo is uploaded, a new version is assigned
+    headerVersion: { type: Number, default: 0 }, // every time photo is uploaded, a new version is assigned
     headerPictureUrl: {
       type: mongoose.SchemaTypes.Url,
       default: 'https://d1ppmvgsdgdlyy.cloudfront.net/giving_tree.jpg'
