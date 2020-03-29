@@ -384,7 +384,7 @@ exports.resetPassword = async (req, res, next) => {
       to: user.email.toLowerCase(),
       from: 'noreply@givingtree.com',
       subject: `Your Password Reset Instructions [${new Date()}]`,
-      text: `Hello!\n\nWe've gotten a request to reset your password.\n\nThe reset link in http://localhost:3001/reset-password/${token}.\n\nIf this wasn't you, please email support@givingtree.com immedietly.\n\nYour friends at Giving Tree.`
+      text: `Hello!\n\nWe've gotten a request to reset your password.\n\nThe reset link in http://localhost:3001/reset-password/${token}\n\nIf this wasn't you, please email support@givingtree.com immedietly.\n\nYour friends at Giving Tree.`
     };
 
     await sgMail.send(msg);
