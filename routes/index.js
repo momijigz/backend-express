@@ -635,7 +635,7 @@ router.get('/discover/:page', async (req, res) => {
           if (req.query.lng && req.query.lat) {
             query.loc = {
               $near: {
-                $maxDistance: req.query.distanceMeter ? Number(req.query.distanceMeter) : 10 * 1000, // default is 1000 M or 10KM radius
+                $maxDistance: req.query.distanceMeter ? Number(req.query.distanceMeter) : 30 * 1000, // default is 1000 M or 10KM radius
                 $minDistance: 0,
                 $geometry: {
                   type: 'Point',
