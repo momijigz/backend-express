@@ -41,7 +41,7 @@ exports.login = async (req, res, next) => {
   const rememberMe = req.body.rememberMe.toString().toLowerCase() === 'true';
   User.findOne({ username: req.body.username.toLowerCase() }, function(err, user) {
     if (err) throw err;
-    if (!user) return res.status(401).json({ message: `Incorrect email or password` });
+    if (!user) return res.status(401).json({ message: `Incorrect username or password` });
 
     user.comparePassword(req.body.password, async function(err, isMatch) {
       if (err) next(err);
@@ -55,7 +55,7 @@ exports.login = async (req, res, next) => {
           _id: user._id
         });
       } else {
-        return res.status(401).json({ message: 'Incorrect email or password' });
+        return res.status(401).json({ message: 'Incorrect username or password' });
       }
     });
   });
