@@ -628,18 +628,19 @@ router.get('/discover/:page', async (req, res) => {
       switch (entry.type) {
         case 'Post':
           let query = {
-            _id: entry.postId,
-            completed: false
+            // _id: entry.postId,
+            // completed: false
             // assignedUser: undefined
           };
 
           if (req.query.lng && req.query.lat) {
             query.loc = {
               $near: {
-                $maxDistance: req.query.distanceMeter ? Number(req.query.distanceMeter) : 1000, // default is 1000 M or 1KM
+                $maxDistance: req.query.distanceMeter ? Number(req.query.distanceMeter) : 10 * 1000, // default is 1000 M or 10KM radius
+                $minDistance: 0,
                 $geometry: {
                   type: 'Point',
-                  coordinates: [Number(req.query.lng), Number(req.query.lat)] // needs to be an array [longitude, latitude]
+                  coordinates: [Number(req.query.lng), Number(req.query.lat)] // [longitude, latitude]
                 }
               }
             };

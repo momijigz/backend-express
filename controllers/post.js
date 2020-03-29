@@ -22,7 +22,11 @@ exports.deletePost = async (req, res, next) => {
     }
 
     let posts = await Post.findOne({ _id: postId, authorId: req.user._id });
-    let newsfeed = await Newsfeed.findOne({ postId: postId, ownerId: req.user._id, deleted: false });
+    let newsfeed = await Newsfeed.findOne({
+      postId: postId,
+      ownerId: req.user._id,
+      deleted: false
+    });
 
     if (posts) {
       posts.remove();
@@ -155,13 +159,10 @@ exports.publishPost = async (req, res, next) => {
     posts.title = title;
     posts.text = text;
 
-    console.log('text: ', text);
-    console.log('JSON.parse(text).location: ', JSON.parse(text).location);
-    const location = {
+    posts.loc = {
       type: 'Point',
-      coordinates: [JSON.parse(text).location.lat, JSON.parse(text).location.lng]
+      coordinates: [Number(JSON.parse(text).location.lng), Number(JSON.parse(text).location.lat)] // [longitude, latitude]
     };
-    posts.loc = location;
 
     posts.draft = false;
     posts.published = true;
