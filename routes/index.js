@@ -628,9 +628,8 @@ router.get('/discover/:page', async (req, res) => {
       switch (entry.type) {
         case 'Post':
           let query = {
-            // _id: entry.postId,
-            // completed: false
-            // assignedUser: undefined
+            _id: entry.postId,
+            completed: false
           };
 
           if (req.query.lng && req.query.lat) {

@@ -42,7 +42,7 @@ const postModel = new Schema(
         default: 'Point'
       },
       coordinates: [Number],
-      default: [0, 0],
+      default: [0, 0]
     },
     completed: { type: Boolean, required: true, default: false },
     trackingDetails: {
@@ -77,7 +77,7 @@ postModel.pre('save', function(next) {
   next();
 });
 
-postModel.index({ 'loc': '2dsphere' });
+postModel.index({ loc: '2dsphere' });
 
 postModel.plugin(mongooseAlgolia, {
   appId: process.env.ALGOLIA_APP_ID,
