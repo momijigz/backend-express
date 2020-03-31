@@ -626,6 +626,8 @@ router.post('/slack/events/webhooks', async (req, res) => {
       `calculated: ${hmacCalculated}, slack_signature: ${slack_signature}`
     );
 
+    console.log('req.body: ', JSON.stringify(req.body, null, 2));
+
     if (
       (req.body.event.bot_profile && req.body.event.bot_profile.name === 'Twilio') ||
       (req.body.event.bot_profile && req.body.event.bot_profile.app_id === 'A010RM19JCB')
@@ -649,7 +651,6 @@ router.post('/slack/events/webhooks', async (req, res) => {
       for (var i = 0; i < findChannelData.length; i++) {
         let currentChannel = findChannelData[i];
         if (currentChannel.id === channelId) {
-          console.log('channelName: ', currentChannel.name)
           sendMessage(currentChannel.name, req.body.event.text);
         }
       }
@@ -747,7 +748,7 @@ async function sendMessage(number, message) {
       from: '14159644261',
       to: `+${number}`
     });
-    console.log(chalk.green('result: ', JSON.stringify(result, null, 2)));
+    // console.log(chalk.green('result: ', JSON.stringify(result, null, 2)));
   } catch (err) {
     console.log(chalk.red('error: ', err));
   }
