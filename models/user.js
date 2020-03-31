@@ -18,6 +18,7 @@ const userModel = new Schema(
     username: { type: String, required: true, lowercase: true, unique: true },
     password: { type: String, required: true },
     karma: { type: Number, default: 0 },
+    flagged: { type: Boolean, default: false }, // flagged accounts cannot interact
     expert: { type: Boolean }, // similar to Yelp Elite's: experts are qualified people in industry who have been vetted and can provide good feedback
     createdAt: { type: Date },
     cancelledTasks: { type: Number, default: 0 },

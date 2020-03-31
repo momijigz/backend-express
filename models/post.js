@@ -54,7 +54,9 @@ const postModel = new Schema(
       dropoffEta: { type: String }, // string for the MVP
       notes: { type: String } // any notes from order (missing items, etc)
     },
-    cancelTaskerReason:[{ reason: { type: String }, user: { type: Schema.Types.ObjectId, ref: 'User' } }],
+    cancelTaskerReason: [
+      { reason: { type: String }, user: { type: Schema.Types.ObjectId, ref: 'User' } }
+    ],
     assignedUser: { type: Schema.Types.ObjectId, ref: 'User' },
     flagged: [{ type: Schema.Types.ObjectId, ref: 'User', required: true }], // other Users can flag a post if it violates, after a certain number, the flagged content is manually reviewed
     voteTotal: { type: Number, default: 0 },
