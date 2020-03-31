@@ -630,7 +630,9 @@ router.post('/slack/events/webhooks', async (req, res) => {
 
     if (
       (req.body.event.bot_profile && req.body.event.bot_profile.name === 'Twilio') ||
-      (req.body.event.bot_profile && req.body.event.bot_profile.app_id === 'A010RM19JCB') || req.body.event.subtype && (req.body.event.subtype === 'channel_join' || req.body.event.subtype === 'channel_purpose')
+      (req.body.event.bot_profile && req.body.event.bot_profile.app_id === 'A010RM19JCB') ||
+      (req.body.event.subtype &&
+        (req.body.event.subtype === 'channel_join' || req.body.event.subtype === 'channel_purpose'))
     ) {
       // skip
     } else {
