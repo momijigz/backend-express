@@ -595,11 +595,8 @@ router.post('/twilio/webhooks', async (req, res) => {
       // U010CCWN6UW (gavin)
       // U0109DL1CGK (kaytlin)
       // U0100QD4M18 (juliana)
-      await axios.post('https://slack.com/api/conversations.create', {
-        token: proccess.env.SLACK_TOKEN,
-        name: req.body.From,
-        user_ids: `U010M33G1J4,U010L4F5BPF,U010FJ918F7,U010CLNM51R,U010CCWN6UW,U0109DL1CGK,U0100QD4M18`
-      });
+      let user_ids = `U010M33G1J4,U010L4F5BPF,U010FJ918F7,U010CLNM51R,U010CCWN6UW,U0109DL1CGK,U0100QD4M18`;
+      twilioHelper(req, user_ids);
     }
     res.send('ok');
   } catch (err) {
@@ -607,6 +604,74 @@ router.post('/twilio/webhooks', async (req, res) => {
     return res.status(400).send({ message: 'error', detail: err });
   }
 });
+
+async function twilioHelper(req, user_ids) {
+  try {
+    let channel = req.body.From;
+
+    let findChannel = await axios.get(
+      `https://slack.com/api/conversations.list?token=${process.env.SLACK_USER_TOKEN}&pretty=1`
+    );
+
+    if (findChannel.data.error) {
+      throw new Error(`${findChannel.data.error}: ${findChannel.data.needed}`);
+    }
+
+    let findChannelData = findChannel.data.channels;
+
+    for (var i = 0; i < findChannelData.length; i++) {
+      let currentChannel = findChannelData[i];
+      if (currentChannel.name === channel) {
+        let result = await axios.get('https://slack.com/api/chat.postMessage', {
+          params: {
+            token: process.env.SLACK_BOT_TOKEN,
+            channel: channel,
+            text: req.body.Text,
+            pretty: 1,
+            mrkdwn: true
+          }
+        });
+
+        if (result.data.error) {
+          throw new Error(`${result.data.error}: ${result.data.needed}`);
+        }
+
+        return;
+      }
+    }
+
+    let result = await axios.get(
+      `https://slack.com/api/conversations.create?token=${process.env.SLACK_USER_TOKEN}&name=${channel}&user_ids=${user_ids}&pretty=1`
+    );
+
+    let channelId = result.data.channel.id;
+    let result2 = await axios.get(
+      `https://slack.com/api/conversations.join?token=${process.env.SLACK_BOT_TOKEN}&channel=${channelId}&pretty=1`
+    );
+
+    let result3 = await axios.get(
+      `https://slack.com/api/conversations.setPurpose?token=${
+        process.env.SLACK_USER_TOKEN
+      }&channel=${channelId}&purpose=${`Welcome to the beginning of your conversation with ${req.body.From}. You can respond to him/her directly by replying in this channel.`}pretty=1`
+    );
+
+    let result4 = await axios.get('https://slack.com/api/chat.postMessage', {
+          params: {
+            token: process.env.SLACK_BOT_TOKEN,
+            channel: channel,
+            text: req.body.Text,
+            pretty: 1,
+            mrkdwn: true
+          }
+        });
+
+        if (result4.data.error) {
+          throw new Error(`${result4.data.error}: ${result4.data.needed}`);
+        }
+  } catch (err) {
+    console.log('error: ', err);
+  }
+}
 
 async function sendMessage(number, message) {
   try {
