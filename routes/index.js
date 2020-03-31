@@ -1,6 +1,7 @@
 const express = require('express');
 const chalk = require('chalk');
 const axios = require('axios');
+const crypto = require('crypto');
 const sgMail = require('@sendgrid/mail');
 const Newsfeed = require(__dirname + '/../models/newsfeed');
 const Follow = require(__dirname + '/../models/follow');
