@@ -596,7 +596,7 @@ router.post('/twilio/webhooks', async (req, res) => {
       // U010CCWN6UW (gavin)
       // U0109DL1CGK (kaytlin)
       // U0100QD4M18 (juliana)
-      let user_ids = `U010M33G1J4,U010L4F5BPF,U010FJ918F7,U010CLNM51R,U010CCWN6UW,U0109DL1CGK,U0100QD4M18`;
+      let user_ids = `U010M33G1J4,U010L4F5BPF,U010FJ918F7,U010CLNM51R,U0109DL1CGK,U0100QD4M18`;
       twilioHelper(req, user_ids);
     }
     res.send('ok');
@@ -676,11 +676,17 @@ async function twilioHelper(req, user_ids) {
       }
     }
 
+    // create new slack channel if not yet
     let result = await axios.get(
-      `https://slack.com/api/conversations.create?token=${process.env.SLACK_USER_TOKEN}&name=${channel}&user_ids=${user_ids}&pretty=1`
+      `https://slack.com/api/conversations.create?token=${process.env.SLACK_USER_TOKEN}&name=${channel}&pretty=1`
     );
 
     let channelId = result.data.channel.id;
+
+    let inviteResult = await axios.get(
+      `https://slack.com/api/conversations.invite?token=${process.env.SLACK_USER_TOKEN}&channel=${channelId}&users=${user_ids}&pretty=1`
+    );
+
     let result2 = await axios.get(
       `https://slack.com/api/conversations.join?token=${process.env.SLACK_BOT_TOKEN}&channel=${channelId}&pretty=1`
     );
