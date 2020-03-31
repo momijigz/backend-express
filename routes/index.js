@@ -605,6 +605,39 @@ router.post('/twilio/webhooks', async (req, res) => {
   }
 });
 
+router.post('/slack/events/webhooks', async (req, res) => {
+  try {
+    let timestamp = req.headers['X-Slack-Request-Timestamp'];
+    let slack_signature = request.headers['X-Slack-Signature'];
+
+    let body =
+      'v0:' +
+      timestamp +
+      ':' +
+      JSON.stringify(req.body)
+        .replace(/'/g, '"')
+        .replace(/\s/g, '');
+    const secret = process.env.SLACK_SIGNING_SECRET;
+    const encodedSecret = Buffer.from(secret, 'latin1');
+    const encodedBody = Buffer.from(body, 'latin1');
+
+    const hmac = crypto.createHmac('sha256', encodedSecret);
+    hmac.update(encodedBody);
+    let hmacCalculated = hmac.digest('base64');
+    hmacCalculated = `v0=${hmacCalculated.toString('latin1')}`;
+
+    await postSlackSuccess(
+      `calculated: ${hmacCalculated}, slack_signature: ${slack_signature}`,
+      'delete_1',
+      `slack-test`
+    );
+    res.send({ challenge: req.body.challenge });
+  } catch (err) {
+    console.log('error: ', err);
+    return res.status(400).send({ message: 'error', detail: err });
+  }
+});
+
 async function twilioHelper(req, user_ids) {
   try {
     let channel = req.body.From;
@@ -656,18 +689,18 @@ async function twilioHelper(req, user_ids) {
     );
 
     let result4 = await axios.get('https://slack.com/api/chat.postMessage', {
-          params: {
-            token: process.env.SLACK_BOT_TOKEN,
-            channel: channel,
-            text: req.body.Text,
-            pretty: 1,
-            mrkdwn: true
-          }
-        });
+      params: {
+        token: process.env.SLACK_BOT_TOKEN,
+        channel: channel,
+        text: req.body.Text,
+        pretty: 1,
+        mrkdwn: true
+      }
+    });
 
-        if (result4.data.error) {
-          throw new Error(`${result4.data.error}: ${result4.data.needed}`);
-        }
+    if (result4.data.error) {
+      throw new Error(`${result4.data.error}: ${result4.data.needed}`);
+    }
   } catch (err) {
     console.log('error: ', err);
   }
