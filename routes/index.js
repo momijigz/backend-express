@@ -611,11 +611,7 @@ router.post('/slack/events/webhooks', async (req, res) => {
     let timestamp = req.headers['x-slack-request-timestamp'];
     let slack_signature = req.headers['x-slack-signature'];
 
-    let body =
-      'v0:' +
-      timestamp +
-      ':' +
-      JSON.stringify(req.body);
+    let body = 'v0:' + timestamp + ':' + JSON.stringify(req.body);
     const secret = process.env.SLACK_SIGNING_SECRET;
     const encodedSecret = Buffer.from(secret, 'latin1');
     const encodedBody = Buffer.from(body, 'latin1');
@@ -625,13 +621,8 @@ router.post('/slack/events/webhooks', async (req, res) => {
     let hmacCalculated = hmac.digest('base64');
     hmacCalculated = `v0=${hmacCalculated.toString('latin1')}`;
 
-    await postSlackSuccess(
-      `calculated: ${hmacCalculated}, slack_signature: ${slack_signature}, headers: ${JSON.stringify(
-        req.headers
-      )}, body: ${JSON.stringify(req.body)}`,
-      'delete_1',
-      `slack-test`
-    );
+    console.log('hmac ========> ', `calculated: ${hmacCalculated}, slack_signature: ${slack_signature}`)
+    console.log('BODY: ', JSON.stringify(req.body, null, 2))
     res.send({ challenge: req.body.challenge });
   } catch (err) {
     console.log('error: ', err);
