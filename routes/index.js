@@ -660,7 +660,7 @@ async function twilioHelper(req, user_ids) {
           params: {
             token: process.env.SLACK_BOT_TOKEN,
             channel: channel,
-            text: `(${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()}): ${
+            text: `\`(${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()})\`: ${
               req.body.Body
             }`,
             pretty: 1,
@@ -695,7 +695,7 @@ async function twilioHelper(req, user_ids) {
       params: {
         token: process.env.SLACK_BOT_TOKEN,
         channel: channel,
-        text: `(${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()}): ${
+        text: `\`(${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()})\`: ${
           req.body.Body
         }`,
         pretty: 1,
