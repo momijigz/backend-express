@@ -641,7 +641,7 @@ router.post('/slack/events/webhooks', async (req, res) => {
 
 async function twilioHelper(req, user_ids) {
   try {
-    let channel = req.body.From;
+    let channel = req.body.From.replace('+', '');
 
     let findChannel = await axios.get(
       `https://slack.com/api/conversations.list?token=${process.env.SLACK_USER_TOKEN}&pretty=1`
