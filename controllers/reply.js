@@ -192,8 +192,9 @@ exports.upvote = async (req, res, next) => {
           return res.status(400).json({ message: `invalid postId or commentId` });
         }
 
-        let previous = comment.upVotes;
+        // let previous = comment.upVotes;
 
+        let contains = comment.upVotes.includes(user._id);
         comment.downVotes = removeFromSet(comment.downVotes, user._id);
         comment.upVotes = addToSet(comment.upVotes, user._id);
         comment.voteTotal = comment.upVotes.length - comment.downVotes.length;
@@ -207,13 +208,14 @@ exports.upvote = async (req, res, next) => {
         post.markModified('comments');
         post.save();
 
-        let after = comment.upVotes;
+        // let after = comment.upVotes;
         let commentWithParent = await populateParent(comment._id, postId, comment);
 
         let commentAuthor = await User.findOne({ username: comment.username });
 
-        if (after > previous && antiSpam(user, commentAuthor)) {
-          commentAuthor.karma = commentAuthor.karma + 1;
+        if (antiSpam(user, commentAuthor)) {
+          console.log(chalk.magenta('save ======== ', contains.toString()));
+          commentAuthor.karma = commentAuthor.karma + contains ? -1 : 1;
           await commentAuthor.save();
         }
 
@@ -250,7 +252,8 @@ exports.downvote = async (req, res, next) => {
           return res.status(400).json({ message: `invalid postId or commentId` });
         }
 
-        let previous = comment.downVotes;
+        // let previous = comment.downVotes;
+        let contains = comment.downVotes.includes(user._id);
         comment.downVotes = addToSet(comment.downVotes, user._id);
         comment.upVotes = removeFromSet(comment.upVotes, user._id);
         comment.voteTotal = comment.upVotes.length - comment.downVotes.length;
@@ -264,13 +267,13 @@ exports.downvote = async (req, res, next) => {
         post.markModified('comments');
         post.save();
 
-        let after = comment.downVotes;
+        // let after = comment.downVotes;
         let commentWithParent = await populateParent(comment._id, postId, comment);
 
         let commentAuthor = await User.findOne({ username: comment.username });
 
-        if (after > previous && antiSpam(user, commentAuthor)) {
-          commentAuthor.karma = commentAuthor.karma > 1 ? commentAuthor.karma - 1 : 0;
+        if (antiSpam(user, commentAuthor)) {
+          commentAuthor.karma = commentAuthor.karma > 1 ? commentAuthor.karma + (contains ? 1 : -1) : 0;
           await commentAuthor.save();
         }
 

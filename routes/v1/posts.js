@@ -1,4 +1,5 @@
 const express = require('express');
+const chalk = require('chalk');
 const postRouter = express.Router();
 const auth = require(__dirname + '/../../middlewares/auth');
 const postController = require(__dirname + '/../../controllers/post');
@@ -251,7 +252,8 @@ postRouter.put('/:postId/vote-up', auth, async (req, res) => {
         return res.status(400).json({ message: `invalid postId` });
       }
 
-      let previous = post.downVotes.length;
+      // let previous = post.upVotes.length;
+      let contains = post.upVotes.includes(user._id);
 
       post.downVotes.pull(user._id);
       post.upVotes = addToSet(post.upVotes, user._id);
@@ -259,11 +261,22 @@ postRouter.put('/:postId/vote-up', auth, async (req, res) => {
 
       post.save();
 
-      let after = post.downVotes.length;
-      let postAuthor = await User.findById(post.authorId).exec();
+      // let after = post.upVotes.length;
 
-      if (after > previous && antiSpam(user, postAuthor)) {
-        postAuthor.karma = postAuthor.karma + 1;
+      let postAuthor = await User.findById(post.authorId).exec();
+      let assignedUser;
+      if (post.complete && post.assignedUser) {
+        assignedUser = await User.findById(post.assignedUser).exec(); 
+      }
+
+      if (antiSpam(user, postAuthor)) {
+        // console.log(chalk.magenta('save==========='));
+        postAuthor.karma = postAuthor.karma + (contains ? -1 : 1); // subtract 1 if a user who has upvoted, upvotes again (to remove upvote)
+        if (assignedUser) {
+          // console.log(chalk.green('save assigned==========='));
+          assignedUser.karma = assignedUser.karma + (contains ? -2 : 1);
+          await assignedUser.save();
+        }
         await postAuthor.save();
       }
 
@@ -284,19 +297,20 @@ postRouter.put('/:postId/vote-down', auth, async (req, res) => {
         return res.status(400).json({ message: `invalid postId` });
       }
 
-      let previous = post.downVotes.length;
+      // let previous = post.downVotes.length;
 
+      let contains = post.downVotes.includes(user._id);
       post.upVotes.pull(user._id);
       post.downVotes = addToSet(post.downVotes, user._id);
       post.voteTotal = post.upVotes.length - post.downVotes.length;
 
       post.save();
 
-      let after = post.downVotes.length;
+      // let after = post.downVotes.length;
       let postAuthor = await User.findById(post.authorId).exec();
 
-      if (after > previous && antiSpam(user, postAuthor)) {
-        postAuthor.karma = postAuthor.karma > 1 ? postAuthor.karma - 1 : 0;
+      if (antiSpam(user, postAuthor)) {
+        postAuthor.karma = postAuthor.karma > 1 ? postAuthor.karma + (contains ? 1 : -1) : 0; // if user is un-down voting, add one to karma, otherwise subtract one
         await postAuthor.save();
       }
 
