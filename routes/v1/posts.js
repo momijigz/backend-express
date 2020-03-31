@@ -266,12 +266,12 @@ postRouter.put('/:postId/vote-up', auth, async (req, res) => {
       let postAuthor = await User.findById(post.authorId).exec();
       let assignedUser;
       if (post.complete && post.assignedUser) {
-        assignedUser = await User.findById(post.assignedUser).exec(); 
+        assignedUser = await User.findById(post.assignedUser).exec();
       }
 
       if (antiSpam(user, postAuthor)) {
         // console.log(chalk.magenta('save==========='));
-        postAuthor.karma = postAuthor.karma + (contains ? -1 : 1); // subtract 1 if a user who has upvoted, upvotes again (to remove upvote)
+        postAuthor.karma = postAuthor.karma + (contains ? postAuthor.karma > 0 ? -1 : 0 : 1); // subtract 1 if a user who has upvoted, upvotes again (to remove upvote)
         if (assignedUser) {
           // console.log(chalk.green('save assigned==========='));
           assignedUser.karma = assignedUser.karma + (contains ? -2 : 1);
@@ -310,7 +310,7 @@ postRouter.put('/:postId/vote-down', auth, async (req, res) => {
       let postAuthor = await User.findById(post.authorId).exec();
 
       if (antiSpam(user, postAuthor)) {
-        postAuthor.karma = postAuthor.karma > 1 ? postAuthor.karma + (contains ? 1 : -1) : 0; // if user is un-down voting, add one to karma, otherwise subtract one
+        postAuthor.karma = postAuthor.karma > 0 ? postAuthor.karma + (contains ? 1 : -1) : 0; // if user is un-down voting, add one to karma, otherwise subtract one
         await postAuthor.save();
       }
 
