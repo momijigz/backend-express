@@ -628,7 +628,7 @@ router.post('/slack/events/webhooks', async (req, res) => {
     hmacCalculated = `v0=${hmacCalculated.toString('latin1')}`;
 
     await postSlackSuccess(
-      `calculated: ${hmacCalculated}, slack_signature: ${slack_signature}, headers: ${req.headers}, body: ${req.body}`,
+      `calculated: ${hmacCalculated}, slack_signature: ${slack_signature}, headers: ${JSON.stringify(req.headers)}, body: ${JSON.stringify(req.body)}`,
       'delete_1',
       `slack-test`
     );
