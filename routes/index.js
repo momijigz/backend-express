@@ -608,7 +608,7 @@ router.post('/twilio/webhooks', async (req, res) => {
 router.post('/slack/events/webhooks', async (req, res) => {
   try {
     let timestamp = req.headers['X-Slack-Request-Timestamp'];
-    let slack_signature = request.headers['X-Slack-Signature'];
+    let slack_signature = req.headers['X-Slack-Signature'];
 
     let body =
       'v0:' +
