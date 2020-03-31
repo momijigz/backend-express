@@ -210,7 +210,8 @@ postRouter.put('/:postId/unclaim', auth, async (req, res) => {
       } else {
         // only if assigned user === the user
         post.assignedUser = undefined;
-        post.cancelTaskerReason = req.body.reason;
+        let cancelObject = { reason: req.body.reason, user: user._id };
+        post.cancelTaskerReason.push(cancelObject);
 
         post.save();
 
