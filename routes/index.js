@@ -621,8 +621,36 @@ router.post('/slack/events/webhooks', async (req, res) => {
     let hmacCalculated = hmac.digest('base64');
     hmacCalculated = `v0=${hmacCalculated.toString('latin1')}`;
 
-    console.log('hmac ========> ', `calculated: ${hmacCalculated}, slack_signature: ${slack_signature}`)
-    console.log('BODY: ', JSON.stringify(req.body, null, 2))
+    console.log(
+      'hmac ========> ',
+      `calculated: ${hmacCalculated}, slack_signature: ${slack_signature}`
+    );
+
+    if (req.body.event.bot_profile.name === 'Twilio' || req.body.event.bot_profile.app_id === 'A010RM19JCB') {
+      // skip
+    } else {
+      let channelId = req.body.event.channel;
+      console.log('channelId: ', channelId);
+      console.log('message: ', req.body.event.text);
+
+      let findChannel = await axios.get(
+        `https://slack.com/api/conversations.list?token=${process.env.SLACK_USER_TOKEN}&pretty=1`
+      );
+  
+      if (findChannel.data.error) {
+        throw new Error(`${findChannel.data.error}: ${findChannel.data.needed}`);
+      }
+  
+      let findChannelData = findChannel.data.channels;
+  
+      for (var i = 0; i < findChannelData.length; i++) {
+        let currentChannel = findChannelData[i];
+        if (currentChannel.id === channelId) {
+          sendMessage(currentChannel.name, req.body.event.text);
+        }
+      }
+    }
+
     res.send({ challenge: req.body.challenge });
   } catch (err) {
     console.log('error: ', err);
