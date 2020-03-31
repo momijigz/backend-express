@@ -143,6 +143,11 @@ postRouter.put('/:postId/complete', auth, async (req, res) => {
 
     let postAuthor = await User.findById(post.authorId).exec();
 
+    let currentCompletedTasks = postAuthor.completedTasks ? postAuthor.completedTasks : 0;
+    postAuthor.completedTasks = currentCompletedTasks + 1;
+
+    postAuthor.save();
+
     sendNotification(postAuthor, req.user, post, 'Complete');
 
     return res.status(200).send(post);
@@ -196,15 +201,25 @@ postRouter.put('/:postId/unclaim', auth, async (req, res) => {
         return res.status(400).json({ message: `task is already completed` });
       }
 
+      if (!req.body.reason || req.body.reason === '') {
+        return res.status(400).json({ message: `reason cannot be empty` });
+      }
+
       if (post.assignedUser.toString() !== user._id.toString()) {
         return res.status(400).json({ message: `you cannot unclaim a different user's task` });
       } else {
         // only if assigned user === the user
         post.assignedUser = undefined;
+        post.cancelTaskerReason = req.body.reason;
 
         post.save();
 
         let postAuthor = await User.findById(post.authorId).exec();
+
+        let currentCancelledTasks = postAuthor.cancelledTasks ? postAuthor.cancelledTasks : 0;
+        postAuthor.cancelledTasks = currentCancelledTasks + 1;
+
+        postAuthor.save();
 
         sendNotification(postAuthor, req.user, post, 'Unclaim');
 
