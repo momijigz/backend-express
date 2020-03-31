@@ -587,6 +587,19 @@ router.post('/twilio/webhooks', async (req, res) => {
         'phone-support',
         `${req.body.From} (${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()})`
       );
+
+      // U010M33G1J4 (isabella)
+      // U010L4F5BPF (alisha)
+      // U010FJ918F7 (sarah)
+      // U010CLNM51R (sagarika)
+      // U010CCWN6UW (gavin)
+      // U0109DL1CGK (kaytlin)
+      // U0100QD4M18 (juliana)
+      await axios.post('https://slack.com/api/conversations.create', {
+        token: proccess.env.SLACK_TOKEN,
+        name: req.body.From,
+        user_ids: `U010M33G1J4,U010L4F5BPF,U010FJ918F7,U010CLNM51R,U010CCWN6UW,U0109DL1CGK,U0100QD4M18`
+      });
     }
     res.send('ok');
   } catch (err) {
