@@ -216,7 +216,8 @@ exports.upvote = async (req, res, next) => {
         if (antiSpam(user, commentAuthor)) {
           console.log(chalk.magenta('save ======== ', contains.toString()));
 
-          commentAuthor.karma = Number(commentAuthor.karma) + Number(contains ? commentAuthor.karma > 0 ? -1 : 0 : 1);
+          commentAuthor.karma =
+            Number(commentAuthor.karma) + Number(contains ? (commentAuthor.karma > 0 ? -1 : 0) : 1);
           await commentAuthor.save();
         }
 
@@ -275,7 +276,9 @@ exports.downvote = async (req, res, next) => {
 
         if (antiSpam(user, commentAuthor)) {
           commentAuthor.karma =
-            Number(commentAuthor.karma) > 0 ? Number(commentAuthor.karma) + Number(contains ? 1 : -1) : 0;
+            Number(commentAuthor.karma) > 0
+              ? Number(commentAuthor.karma) + Number(contains ? 1 : -1)
+              : 0;
           await commentAuthor.save();
         }
 

@@ -271,7 +271,7 @@ postRouter.put('/:postId/vote-up', auth, async (req, res) => {
 
       if (antiSpam(user, postAuthor)) {
         // console.log(chalk.magenta('save==========='));
-        postAuthor.karma = postAuthor.karma + (contains ? postAuthor.karma > 0 ? -1 : 0 : 1); // subtract 1 if a user who has upvoted, upvotes again (to remove upvote)
+        postAuthor.karma = postAuthor.karma + (contains ? (postAuthor.karma > 0 ? -1 : 0) : 1); // subtract 1 if a user who has upvoted, upvotes again (to remove upvote)
         if (assignedUser) {
           // console.log(chalk.green('save assigned==========='));
           assignedUser.karma = assignedUser.karma + (contains ? -2 : 1);
