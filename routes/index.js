@@ -215,11 +215,7 @@ router.post('/feedback', auth, async (req, res) => {
       text: req.body.text
     };
 
-    await postSlackSuccess(
-      `${req.body.text}`,
-      'realtime-feedbacck',
-      `feedback-bit`
-    );
+    await postSlackSuccess(`${req.body.text}`, 'realtime-feedback', `feedback-bot`);
 
     await sgMail.send(msg);
     return res.send('success');
