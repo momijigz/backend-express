@@ -574,9 +574,7 @@ async function twilioCallHelper(req, user_ids, recordingUrl) {
           params: {
             token: process.env.SLACK_BOT_TOKEN,
             channel: channel,
-            text: `\`(${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()})\`, New VoiceMail: ${
-              recordingUrl
-            }`,
+            text: `\`(${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()})\`, New VoiceMail: ${recordingUrl}`,
             pretty: 1,
             mrkdwn: true
           }
@@ -615,9 +613,7 @@ async function twilioCallHelper(req, user_ids, recordingUrl) {
       params: {
         token: process.env.SLACK_BOT_TOKEN,
         channel: channel,
-        text: `\`(${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()})\`, New VoiceMail: ${
-          recordingUrl
-        }`,
+        text: `\`(${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()})\`, New VoiceMail: ${recordingUrl}`,
         pretty: 1,
         mrkdwn: true
       }
@@ -637,15 +633,25 @@ router.post('/twilio/webhooks/call', async (req, res) => {
     console.log('===========> getting a new call: ', req.body);
     let night = true;
     const twiml = new VoiceResponse();
-    
+
     let recordingUrl = req.body.RecordingUrl;
     if (recordingUrl) {
       // send message and url to slack
+
+      // U010M33G1J4 (isabella)
+      // U010L4F5BPF (alisha)
+      // U010FJ918F7 (sarah)
+      // U010CLNM51R (sagarika)
+      // U010CCWN6UW (gavin)
+      // U0109DL1CGK (kaytlin)
+      // U0100QD4M18 (juliana)
+      let user_ids = `U010M33G1J4,U010L4F5BPF,U010FJ918F7,U010CLNM51R,U0109DL1CGK,U0100QD4M18`;
+
       twilioCallHelper(req, user_ids, recordingUrl);
     } else {
       if (night) {
         console.log('inside');
-  
+
         console.log('speaking: ', twiml);
         twiml.say(
           "Welcome to the Giving Tree! Please leave us your request after the beep and we'll get back to you as soon as possible."
@@ -700,7 +706,6 @@ router.post('/twilio/webhooks', async (req, res) => {
         'phone-support',
         `${req.body.From} (${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()})`
       );
-
       // U010M33G1J4 (isabella)
       // U010L4F5BPF (alisha)
       // U010FJ918F7 (sarah)
