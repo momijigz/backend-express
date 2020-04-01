@@ -143,11 +143,17 @@ postRouter.put('/:postId/complete', auth, async (req, res) => {
     post.save();
 
     let postAuthor = await User.findById(post.authorId).exec();
+    let assignedUser = await User.findById(post.assignedUser).exec();
 
     let currentCompletedTasks = postAuthor.completedTasks ? postAuthor.completedTasks : 0;
     postAuthor.completedTasks = currentCompletedTasks + 1;
 
-    postAuthor.save();
+    if (assignedUser) {
+      assignedUser.karma = Number(assignedUser.karma) + 2;
+      await assignedUser.save();
+    }
+
+    await postAuthor.save();
 
     sendNotification(postAuthor, req.user, post, 'Complete');
 
