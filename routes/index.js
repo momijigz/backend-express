@@ -642,12 +642,12 @@ router.post('/twilio/webhooks/call', async (req, res) => {
 
       // U010M33G1J4 (isabella)
       // U010L4F5BPF (alisha)
-      // U010FJ918F7 (sarah)
       // U010CLNM51R (sagarika)
       // U010CCWN6UW (gavin)
       // U0109DL1CGK (kaytlin)
       // U0100QD4M18 (juliana)
-      let user_ids = `U010M33G1J4,U010L4F5BPF,U010FJ918F7,U010CLNM51R,U0109DL1CGK,U0100QD4M18`;
+      // U010LQ3847L (joan)
+      let user_ids = `U010M33G1J4,U010L4F5BPF,U010CLNM51R,U0109DL1CGK,U0100QD4M18,U010LQ3847L`;
 
       twilioCallHelper(req, user_ids, recordingUrl);
     } else {
@@ -707,12 +707,12 @@ router.post('/twilio/webhooks', async (req, res) => {
       );
       // U010M33G1J4 (isabella)
       // U010L4F5BPF (alisha)
-      // U010FJ918F7 (sarah)
       // U010CLNM51R (sagarika)
       // U010CCWN6UW (gavin)
       // U0109DL1CGK (kaytlin)
       // U0100QD4M18 (juliana)
-      let user_ids = `U010M33G1J4,U010L4F5BPF,U010FJ918F7,U010CLNM51R,U0109DL1CGK,U0100QD4M18`;
+      // U010LQ3847L (joan)
+      let user_ids = `U010M33G1J4,U010L4F5BPF,U010CLNM51R,U0109DL1CGK,U0100QD4M18,U010LQ3847L`;
       twilioHelper(req, user_ids);
     }
     res.send('ok');
