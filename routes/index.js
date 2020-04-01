@@ -1,5 +1,6 @@
 const express = require('express');
 const chalk = require('chalk');
+const moment = require('moment-timezone');
 const axios = require('axios');
 const crypto = require('crypto');
 const sgMail = require('@sendgrid/mail');
@@ -629,9 +630,9 @@ async function twilioCallHelper(req, user_ids, recordingUrl) {
 
 router.post('/twilio/webhooks/call', async (req, res) => {
   try {
-    // 10pm to 8am PST
     console.log('===========> getting a new call: ', req.body);
-    let night = true;
+    let currentTime = moment.tz("America/Los_Angeles").format('h:mma');
+    let night = currentTime < '8:00am' || currentTime > '8:00pm'; // night = voicemail only
     const twiml = new VoiceResponse();
 
     let recordingUrl = req.body.RecordingUrl;
@@ -650,13 +651,10 @@ router.post('/twilio/webhooks/call', async (req, res) => {
       twilioCallHelper(req, user_ids, recordingUrl);
     } else {
       if (night) {
-        console.log('inside');
-
         console.log('speaking: ', twiml);
         twiml.say(
           "Welcome to the Giving Tree! Please leave us your request after the beep and we'll get back to you as soon as possible."
         );
-        console.log('record: ');
         twiml.record({
           timeout: 10,
           recordingStatusCallback: '/voicemail',
