@@ -553,32 +553,114 @@ router.get('/leaderboard', optionalAuth, async (req, res) => {
   }
 });
 
+async function twilioCallHelper(req, user_ids, recordingUrl) {
+  try {
+    let channel = req.body.From.replace('+', '');
+
+    let findChannel = await axios.get(
+      `https://slack.com/api/conversations.list?token=${process.env.SLACK_USER_TOKEN}&pretty=1`
+    );
+
+    if (findChannel.data.error) {
+      throw new Error(`${findChannel.data.error}: ${findChannel.data.needed}`);
+    }
+
+    let findChannelData = findChannel.data.channels;
+
+    for (var i = 0; i < findChannelData.length; i++) {
+      let currentChannel = findChannelData[i];
+      if (currentChannel.name === channel) {
+        let result = await axios.get('https://slack.com/api/chat.postMessage', {
+          params: {
+            token: process.env.SLACK_BOT_TOKEN,
+            channel: channel,
+            text: `\`(${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()})\`, New VoiceMail: ${
+              recordingUrl
+            }`,
+            pretty: 1,
+            mrkdwn: true
+          }
+        });
+
+        if (result.data.error) {
+          throw new Error(`${result.data.error}: ${result.data.needed}`);
+        }
+
+        return;
+      }
+    }
+
+    // create new slack channel if not yet
+    let result = await axios.get(
+      `https://slack.com/api/conversations.create?token=${process.env.SLACK_USER_TOKEN}&name=${channel}&pretty=1`
+    );
+
+    let channelId = result.data.channel.id;
+
+    let inviteResult = await axios.get(
+      `https://slack.com/api/conversations.invite?token=${process.env.SLACK_USER_TOKEN}&channel=${channelId}&users=${user_ids}&pretty=1`
+    );
+
+    let result2 = await axios.get(
+      `https://slack.com/api/conversations.join?token=${process.env.SLACK_BOT_TOKEN}&channel=${channelId}&pretty=1`
+    );
+
+    let result3 = await axios.get(
+      `https://slack.com/api/conversations.setPurpose?token=${
+        process.env.SLACK_USER_TOKEN
+      }&channel=${channelId}&purpose=${`Welcome to the beginning of your conversation with ${req.body.From}. You can respond to him/her directly by replying in this channel.`}pretty=1`
+    );
+
+    let result4 = await axios.get('https://slack.com/api/chat.postMessage', {
+      params: {
+        token: process.env.SLACK_BOT_TOKEN,
+        channel: channel,
+        text: `\`(${req.body.FromCity.toLowerCase()}, ${req.body.FromState.toLowerCase()})\`, New VoiceMail: ${
+          recordingUrl
+        }`,
+        pretty: 1,
+        mrkdwn: true
+      }
+    });
+
+    if (result4.data.error) {
+      throw new Error(`${result4.data.error}: ${result4.data.needed}`);
+    }
+  } catch (err) {
+    console.log('error: ', err);
+  }
+}
+
 router.post('/twilio/webhooks/call', async (req, res) => {
   try {
     // 10pm to 8am PST
     console.log('===========> getting a new call: ', req.body);
     let night = true;
     const twiml = new VoiceResponse();
-
-    if (night) {
-      console.log('inside');
-
-      console.log('speaking: ', twiml);
-      twiml.say(
-        "Welcome to the Giving Tree! Please leave us your request after the beep and we'll get back to you as soon as possible."
-      );
-      console.log('record: ');
-      twiml.record({
-        timeout: 10,
-        recordingStatusCallback: '/voicemail',
-        recordingStatusCallbackEvent: 'completed'
-      });
-
-      console.log('over');
+    
+    let recordingUrl = req.body.RecordingUrl;
+    if (recordingUrl) {
+      // send message and url to slack
+      twilioCallHelper(req, user_ids, recordingUrl);
     } else {
-      // Forward to mobile
-      console.log('forward to mobile');
-      twiml.dial(process.env.TWILIO_CALL_FORWARD);
+      if (night) {
+        console.log('inside');
+  
+        console.log('speaking: ', twiml);
+        twiml.say(
+          "Welcome to the Giving Tree! Please leave us your request after the beep and we'll get back to you as soon as possible."
+        );
+        console.log('record: ');
+        twiml.record({
+          timeout: 10,
+          recordingStatusCallback: '/voicemail',
+          recordingStatusCallbackEvent: 'completed'
+        });
+      } else {
+        // Forward to mobile
+        console.log('forward to mobile');
+        twiml.dial(process.env.TWILIO_CALL_FORWARD);
+      }
     }
 
     // respond to webhook with XML
