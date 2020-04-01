@@ -651,7 +651,7 @@ router.post('/twilio/webhooks/call', async (req, res) => {
 
       twilioCallHelper(req, user_ids, recordingUrl);
     } else {
-      if (night) {
+      if (!night) {
         console.log('speaking: ', twiml);
         twiml.say(
           "Welcome to the Giving Tree! Please leave us your request after the beep and we'll get back to you as soon as possible."
