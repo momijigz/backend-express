@@ -16,6 +16,7 @@ const emoji = require('node-emoji');
 const accountSid = 'ACad0b46ce3e3246e36d9ba0be4587ef12';
 const authToken = process.env.TWILIO_AUTH;
 const twilio = require('twilio')(accountSid, authToken);
+const VoiceResponse = require('twilio').twiml.VoiceResponse;
 const client = algoliasearch(process.env.ALGOLIA_APP_ID, process.env.ALGOLIA_API_KEY);
 
 const userIndex = client.initIndex(`user_${process.env.NODE_ENV}`);
@@ -554,6 +555,37 @@ router.get('/leaderboard', optionalAuth, async (req, res) => {
 
 router.post('/twilio/webhooks/call', async (req, res) => {
   try {
+    // 10pm to 8am PST
+    console.log('===========> getting a new call: ', req.body);
+    let night = true;
+
+    if (night) {
+      console.log('inside');
+      const twiml = new VoiceResponse();
+
+      console.log('speaking: ', twiml);
+      twiml.say(
+        "Welcome to the Giving Tree! Please leave us your request after the beep and we'll get back to you as soon as possible."
+      );
+
+      console.log('record: ');
+      twiml.record({
+        timeout: 10,
+        recordingStatusCallback: '/voicemail',
+        recordingStatusCallbackEvent: 'completed'
+      });
+
+      console.log('over')
+    } else {
+      // Forward to mobile
+      console.log('forward to mobile')
+      const twiml = new VoiceResponse();
+      twiml.dial(process.env.TWILIO_CALL_FORWARD);
+    }
+
+    // respond to webhook with XML
+    res.writeHead(200, { 'Content-Type': 'text/xml' });
+    res.end(twiml.toString());
   } catch (err) {
     console.log('error: ', err);
     return res.status(400).send({ message: 'error', detail: err });
