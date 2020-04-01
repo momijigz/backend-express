@@ -558,16 +558,15 @@ router.post('/twilio/webhooks/call', async (req, res) => {
     // 10pm to 8am PST
     console.log('===========> getting a new call: ', req.body);
     let night = true;
+    const twiml = new VoiceResponse();
 
     if (night) {
       console.log('inside');
-      const twiml = new VoiceResponse();
 
       console.log('speaking: ', twiml);
       twiml.say(
         "Welcome to the Giving Tree! Please leave us your request after the beep and we'll get back to you as soon as possible."
       );
-
       console.log('record: ');
       twiml.record({
         timeout: 10,
@@ -575,10 +574,10 @@ router.post('/twilio/webhooks/call', async (req, res) => {
         recordingStatusCallbackEvent: 'completed'
       });
 
-      console.log('over')
+      console.log('over');
     } else {
       // Forward to mobile
-      console.log('forward to mobile')
+      console.log('forward to mobile');
       const twiml = new VoiceResponse();
       twiml.dial(process.env.TWILIO_CALL_FORWARD);
     }
