@@ -578,7 +578,6 @@ router.post('/twilio/webhooks/call', async (req, res) => {
     } else {
       // Forward to mobile
       console.log('forward to mobile');
-      const twiml = new VoiceResponse();
       twiml.dial(process.env.TWILIO_CALL_FORWARD);
     }
 
