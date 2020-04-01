@@ -631,11 +631,9 @@ async function twilioCallHelper(req, user_ids, recordingUrl) {
 router.post('/twilio/webhooks/call', async (req, res) => {
   try {
     console.log('===========> getting a new call: ', req.body);
-    let currentTime = moment.tz('America/Los_Angeles').format('h:mma');
-    let night = currentTime < '8:00am' || currentTime > '8:00pm'; // night = voicemail only
+    let currentTime = Number(moment.tz('America/Los_Angeles').format('H'));
+    let night = !(currentTime >= 7 && currentTime <= 19); // 7am to 7pm PST
 
-    console.log('currentTime: ', currentTime);
-    console.log('night: ', night.toString());
     const twiml = new VoiceResponse();
 
     let recordingUrl = req.body.RecordingUrl;
@@ -653,7 +651,7 @@ router.post('/twilio/webhooks/call', async (req, res) => {
 
       twilioCallHelper(req, user_ids, recordingUrl);
     } else {
-      if (!night) {
+      if (night) {
         console.log('speaking: ', twiml);
         twiml.say(
           "Welcome to the Giving Tree! Please leave us your request after the beep and we'll get back to you as soon as possible."
