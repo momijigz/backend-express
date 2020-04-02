@@ -851,6 +851,10 @@ async function twilioHelper(req, user_ids) {
       }
     });
 
+    // intro message to new user
+    let introMessage = 'Welcome to the Giving Tree! A representative will be with you shortly to help you 🌳';
+    sendMessage(result.data.channel.name, introMessage);
+
     if (result4.data.error) {
       throw new Error(`${result4.data.error}: ${result4.data.needed}`);
     }
