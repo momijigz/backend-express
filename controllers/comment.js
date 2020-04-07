@@ -48,6 +48,12 @@ exports.createComment = async (req, res, next) => {
 
         sendNotification(postAuthor, author, comment, 'Comment');
 
+        // If post has an assigned user, notify them too of the comment
+        if (post.assignedUser) {
+          const assignedUser = await User.findById(post.assignedUser);
+          sendNotification(assignedUser, author, comment, 'Comment');
+        }
+
         return res.status(200).json(post);
       })
       .catch(err => {
