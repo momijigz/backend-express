@@ -852,7 +852,8 @@ async function twilioHelper(req, user_ids) {
     });
 
     // intro message to new user
-    let introMessage = 'Welcome to the Giving Tree! A representative will be with you shortly to help you 🌳';
+    let introMessage =
+      'Welcome to the Giving Tree! A representative will be with you shortly to help you 🌳';
     sendMessage(result.data.channel.name, introMessage);
 
     if (result4.data.error) {
@@ -884,7 +885,7 @@ router.get('/discover/:page', async (req, res) => {
     const page = req.params.page || 1;
 
     let query = {
-      completed: false,
+      completed: false
     };
 
     if (req.query.lng && req.query.lat) {
@@ -899,15 +900,12 @@ router.get('/discover/:page', async (req, res) => {
         }
       };
     }
-    
+
     let newsFeed = await Post.find(query)
       .sort({ updatedAt: -1 })
       .skip(resPerPage * page - resPerPage)
       .limit(resPerPage)
-      .populate(
-        'authorId',
-        'name username email karma createdAt profileVersion profilePictureUrl'
-      )
+      .populate('authorId', 'name username email karma createdAt profileVersion profilePictureUrl')
       .exec();
     const numOfResults = await Post.count(query);
 
