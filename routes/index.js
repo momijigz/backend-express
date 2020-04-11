@@ -885,7 +885,9 @@ router.get('/discover/:page', async (req, res) => {
     const page = req.params.page || 1;
 
     let query = {
-      completed: false
+      completed: false,
+      draft: false,
+      published: true
     };
 
     if (req.query.lng && req.query.lat) {
