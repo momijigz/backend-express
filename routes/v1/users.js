@@ -345,7 +345,15 @@ userRouter.get('/:id', userController.validate('publicAuth'), publicAuth, async 
         downVotes: 1,
         text: 1,
         title: 1,
-        categories: 1
+        categories: 1,
+        requestType: 1,
+        description: 1,
+        cart: 1,
+        contactMethod: 1,
+        name: 1,
+        dueDate: 1,
+        postal: 1,
+        publicAddress: 1
       })
       .limit(10)
       .exec();

@@ -79,7 +79,8 @@ exports.createDraft = async (req, res, next) => {
         'address',
         'requestType',
         'description',
-        'cart'
+        'cart',
+        'publicAddress'
       ])
     });
 

@@ -156,7 +156,7 @@ router.get('/refresh/:postId', optionalAuth, async (req, res) => {
           if (foundPost.assignedUser && req.user && foundPost.assignedUser.equals(req.user._id)) {
             // user making the request is the assigned user
             foundPost = await Post.findOne({ _id: entry.postId, draft: false, published: true })
-              .select('+email +phoneNumber')
+              .select('+email +phoneNumber +location +loc +address')
               .populate(
                 'authorId',
                 'name username karma createdAt profileVersion profilePictureUrl'
@@ -895,7 +895,8 @@ router.get('/discover/:page', async (req, res) => {
     let query = {
       completed: false,
       draft: false,
-      published: true
+      published: true,
+      assignedUser: null
     };
 
     if (req.query.lng && req.query.lat) {
@@ -912,6 +913,7 @@ router.get('/discover/:page', async (req, res) => {
     }
 
     let newsFeed = await Post.find(query)
+      .select('-loc')
       .sort({ updatedAt: -1 })
       .skip(resPerPage * page - resPerPage)
       .limit(resPerPage)

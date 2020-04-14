@@ -41,8 +41,10 @@ const postModel = new Schema(
         type: String,
         default: 'Point'
       },
-      coordinates: [Number],
-      default: [0, 0]
+      coordinates: {
+        type: [Number],
+        default: [0, 0]
+      }
     },
     completed: { type: Boolean, required: true, default: false },
     trackingDetails: {
@@ -66,7 +68,7 @@ const postModel = new Schema(
     ratings: [{ type: Schema.Types.ObjectId, ref: 'Rating' }],
     rating: { type: Number },
     // new fields, to prevent JSON in 'text'
-    address: { type: String },
+    address: { type: String, select: false },
     requestType: { type: String },
     description: { type: String },
     cart: [
@@ -79,9 +81,16 @@ const postModel = new Schema(
     email: { type: String, select: false },
     name: { type: String },
     dueDate: { type: Date },
-    location: { lat: { type: Number }, lng: { type: Number } },
+    location: {
+      type: {
+        lat: { type: Number },
+        lng: { type: Number }
+      },
+      select: false
+    },
     postal: { type: String },
-    phoneNumber: { type: String, select: false }
+    phoneNumber: { type: String, select: false },
+    publicAddress: { type: String }
   },
   {
     collection: 'Post'
