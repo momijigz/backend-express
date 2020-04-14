@@ -664,7 +664,10 @@ router.post('/twilio/webhooks/call', async (req, res) => {
       } else {
         // Forward to mobile
         console.log('forward to mobile');
-        twiml.dial(process.env.TWILIO_CALL_FORWARD);
+        const dial = twiml.dial({
+          callerId: process.env.TWILIO_CALLER_ID // the number that displays from
+        });
+        dial.number(process.env.TWILIO_CALL_FORWARD);
       }
     }
 
