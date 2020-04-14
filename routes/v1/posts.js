@@ -11,17 +11,17 @@ var io = require(__dirname + '/../../mysockets');
 const sendNotification = require(__dirname + '/../../util/notification');
 
 const getPosts = () => {
-  return Post.find().populate('authorId');
+  return Post.find().populate('authorId', '-email');
 };
 
 const getPost = id => {
   return Post.findOne({ _id: id })
-    .populate('authorId')
+    .populate('authorId', '-email')
     .exec();
 };
 
 const getDraft = (id, user) => {
-  return Post.findOne({ _id: id, authorId: user._id }).populate('authorId');
+  return Post.findOne({ _id: id, authorId: user._id }).populate('authorId', '-email');
 };
 
 const removePost = (_id, user) => {
@@ -106,7 +106,7 @@ postRouter.put('/:postId/complete', auth, async (req, res) => {
   const user = req.user;
   try {
     let post = await Post.findOne({ _id: req.params.postId })
-      .populate('assignedUser', 'name ussername email karma createdAt profilePictureUrl')
+      .populate('assignedUser', 'name username email karma createdAt profilePictureUrl')
       .exec();
     if (!post) {
       return res.status(400).json({ message: `invalid postId` });
