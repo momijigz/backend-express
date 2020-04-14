@@ -57,12 +57,7 @@ exports.createDraft = async (req, res, next) => {
       return;
     }
 
-    const {
-      categories,
-      title,
-      text,
-      location,
-    } = req.body;
+    const { categories, title, text, location } = req.body;
 
     const posts = await Post.create({
       categories: categories.split(','),
@@ -84,7 +79,7 @@ exports.createDraft = async (req, res, next) => {
         'address',
         'requestType',
         'description',
-        'cart',
+        'cart'
       ])
     });
 

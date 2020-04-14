@@ -81,7 +81,7 @@ const postModel = new Schema(
     dueDate: { type: Date },
     location: { lat: { type: Number }, lng: { type: Number } },
     postal: { type: String },
-    phoneNumber: { type: String, select: false },
+    phoneNumber: { type: String, select: false }
   },
   {
     collection: 'Post'
