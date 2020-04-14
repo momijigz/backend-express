@@ -25,9 +25,9 @@ const postIndex = client.initIndex(`post_${process.env.NODE_ENV}`);
 const commentIndex = client.initIndex(`comment_${process.env.NODE_ENV}`);
 
 userIndex.setSettings({
-  searchableAttributes: ['username', 'email', 'name', 'summary'],
-  attributesToHighlight: ['username', 'email', 'name', 'summary'],
-  attributesToSnippet: ['username', 'email', 'name', 'summary']
+  searchableAttributes: ['username', 'name', 'summary'],
+  attributesToHighlight: ['username', 'name', 'summary'],
+  attributesToSnippet: ['username', 'name', 'summary']
 });
 
 commentIndex.setSettings({
@@ -133,7 +133,7 @@ router.get('/webhook', (req, res) => {
 });
 
 // returns refreshed resource to client
-router.get('/refresh/:postId', async (req, res) => {
+router.get('/refresh/:postId', optionalAuth, async (req, res) => {
   try {
     let entry = await Newsfeed.findOne({ postId: req.params.postId });
     if (!entry) {
@@ -150,12 +150,19 @@ router.get('/refresh/:postId', async (req, res) => {
     switch (entry.type) {
       case 'Post':
         let foundPost = await Post.findOne({ _id: entry.postId, draft: false, published: true })
-          .populate(
-            'authorId',
-            'name username email karma createdAt profileVersion profilePictureUrl'
-          )
+          .populate('authorId', 'name username karma createdAt profileVersion profilePictureUrl')
           .exec();
         if (foundPost) {
+          if (foundPost.assignedUser && req.user && foundPost.assignedUser.equals(req.user._id)) {
+            // user making the request is the assigned user
+            foundPost = await Post.findOne({ _id: entry.postId, draft: false, published: true })
+              .select('+email +phoneNumber +location +loc +address')
+              .populate(
+                'authorId',
+                'name username karma createdAt profileVersion profilePictureUrl'
+              )
+              .exec();
+          }
           compiledNewsfeed.push(foundPost);
         } else {
           // no post but newsfeed exists - delete newsfeed
@@ -529,7 +536,8 @@ router.get('/leaderboard', optionalAuth, async (req, res) => {
       url: 0,
       balanceUSD: 0,
       donations: 0,
-      tokens: 0
+      tokens: 0,
+      email: 0
     };
 
     let sortedUsers = await User.find({}, filters)
@@ -890,7 +898,8 @@ router.get('/discover/:page', async (req, res) => {
     let query = {
       completed: false,
       draft: false,
-      published: true
+      published: true,
+      assignedUser: null
     };
 
     if (req.query.lng && req.query.lat) {
@@ -907,10 +916,11 @@ router.get('/discover/:page', async (req, res) => {
     }
 
     let newsFeed = await Post.find(query)
+      .select('-loc')
       .sort({ updatedAt: -1 })
       .skip(resPerPage * page - resPerPage)
       .limit(resPerPage)
-      .populate('authorId', 'name username email karma createdAt profileVersion profilePictureUrl')
+      .populate('authorId', 'name username karma createdAt profileVersion profilePictureUrl')
       .exec();
     const numOfResults = await Post.count(query);
 
@@ -950,10 +960,7 @@ router.get('/ongoing/:page', auth, async (req, res) => {
             completed: false,
             assignedUser: req.user._id // assigned to the user authenticating
           })
-            .populate(
-              'authorId',
-              'name username email karma createdAt profileVersion profilePictureUrl'
-            )
+            .populate('authorId', 'name username karma createdAt profileVersion profilePictureUrl')
             .exec();
           if (foundPost) {
             compiledNewsfeed.push(foundPost);
@@ -1058,7 +1065,7 @@ router.get('/completed/:page', auth, async (req, res) => {
           })
             .populate(
               'assignedUser',
-              'name username email karma createdAt profileVersion profilePictureUrl'
+              'name username karma createdAt profileVersion profilePictureUrl'
             )
             .exec();
 
@@ -1164,13 +1171,10 @@ router.get('/global/:page', optionalAuth, async (req, res) => {
             _id: entry.postId,
             completed: true
           })
-            .populate(
-              'authorId',
-              'name username email karma createdAt profileVersion profilePictureUrl'
-            )
+            .populate('authorId', 'name username karma createdAt profileVersion profilePictureUrl')
             .populate(
               'assignedUser',
-              'name username email karma createdAt profileVersion profilePictureUrl'
+              'name username karma createdAt profileVersion profilePictureUrl'
             )
             .exec();
 

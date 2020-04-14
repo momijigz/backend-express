@@ -345,7 +345,15 @@ userRouter.get('/:id', userController.validate('publicAuth'), publicAuth, async 
         downVotes: 1,
         text: 1,
         title: 1,
-        categories: 1
+        categories: 1,
+        requestType: 1,
+        description: 1,
+        cart: 1,
+        contactMethod: 1,
+        name: 1,
+        dueDate: 1,
+        postal: 1,
+        publicAddress: 1
       })
       .limit(10)
       .exec();
@@ -472,43 +480,35 @@ userRouter.put('/seen', auth, async (req, res) => {
 
 // can speed up this call
 userRouter.get('/', auth, async (req, res) => {
-  let result = cache.get(req.user._id);
-
-  if (result) {
-    res.status(200).json(result);
-  } else {
-    let notifications = await Notification.find({ to: req.user._id, seen: false })
-      .populate('to')
-      .populate('from')
-      .exec();
-    for (var i = 0; i < notifications.length; i++) {
-      notifications[i].postId = await Newsfeed.findOne({
-        postId: notifications[i].postId,
-        deleted: false
-      }).exec();
-    }
-
-    let draftsFeed = await Post.find({ draft: true, authorId: req.user._id }).exec();
-
-    let returnObject = {
-      username: req.user.username,
-      name: req.user.name,
-      profileVersion: req.user.profileVersion,
-      headerVersion: req.user.headerVersion,
-      email: req.user.email,
-      createdAt: req.user.createdAt,
-      drafts: draftsFeed,
-      seenSubmitTutorial: req.user.seenSubmitTutorial,
-      welcomeTutorial: req.user.welcomeTutorial,
-      _id: req.user._id,
-      notifications,
-      message: 'success!'
-    };
-
-    cache.put(req.user._id, returnObject, 5 * 60 * 1000); // they update rates every 5 minutes
-
-    res.status(200).json(returnObject);
+  let notifications = await Notification.find({ to: req.user._id, seen: false })
+    .populate('to', 'username profilePictureUrl')
+    .populate('from', 'username profilePictureUrl')
+    .exec();
+  for (var i = 0; i < notifications.length; i++) {
+    notifications[i].postId = await Newsfeed.findOne({
+      postId: notifications[i].postId,
+      deleted: false
+    }).exec();
   }
+
+  let draftsFeed = await Post.find({ draft: true, authorId: req.user._id }).exec();
+
+  let returnObject = {
+    username: req.user.username,
+    name: req.user.name,
+    profileVersion: req.user.profileVersion,
+    headerVersion: req.user.headerVersion,
+    email: req.user.email,
+    createdAt: req.user.createdAt,
+    drafts: draftsFeed,
+    seenSubmitTutorial: req.user.seenSubmitTutorial,
+    welcomeTutorial: req.user.welcomeTutorial,
+    _id: req.user._id,
+    notifications,
+    message: 'success!'
+  };
+
+  res.status(200).json(returnObject);
 });
 
 module.exports = userRouter;

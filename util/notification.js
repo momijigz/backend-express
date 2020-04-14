@@ -33,8 +33,8 @@ const sendNotification = async (author, currentUser, post, action) => {
 
         if (io.sockets.sockets[author.sessionId]) {
           let notification = await Notification.findById(newNotification._id)
-            .populate('to')
-            .populate('from')
+            .populate('to', 'username profilePictureUrl')
+            .populate('from', 'username profilePictureUrl')
             .exec();
 
           notification.postId = await NewsFeed.findOne({ postId: notification.postId, deleted: false }).exec();
