@@ -33,7 +33,7 @@ postRouter.get('/:id', async (req, res) => {
     const id = req.params.id;
 
     let post = await Post.findOne({ _id: id })
-      .populate('authorId')
+      .populate('authorId', '-email')
       .exec();
     if (!post) {
       return res.status(401).send({ message: `Post doesn't exist anymore` });

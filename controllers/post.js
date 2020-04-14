@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { body, param, validationResult } = require('express-validator/check');
 const Post = require(__dirname + '/../models/post');
 const Newsfeed = require(__dirname + '/../models/newsfeed');
@@ -56,10 +57,12 @@ exports.createDraft = async (req, res, next) => {
       return;
     }
 
-    const { categories, title, text } = req.body;
-
-    // parse lat, long from text location
-    let location = JSON.parse(text).location;
+    const {
+      categories,
+      title,
+      text,
+      location,
+    } = req.body;
 
     const posts = await Post.create({
       categories: categories.split(','),
@@ -69,7 +72,20 @@ exports.createDraft = async (req, res, next) => {
       authorId: req.user._id,
       username: req.user.username,
       draft: true,
-      published: false
+      published: false,
+      ..._.pick(req.body, [
+        'contactMethod',
+        'email',
+        'name',
+        'dueDate',
+        'location',
+        'postal',
+        'phoneNumber',
+        'address',
+        'requestType',
+        'description',
+        'cart',
+      ])
     });
 
     res.status(200).json(posts);
@@ -155,14 +171,6 @@ exports.publishPost = async (req, res, next) => {
     }
 
     const { categories, title, text } = req.body;
-    posts.categories = categories;
-    posts.title = title;
-    posts.text = text;
-
-    posts.loc = {
-      type: 'Point',
-      coordinates: [Number(JSON.parse(text).location.lng), Number(JSON.parse(text).location.lat)] // [longitude, latitude]
-    };
 
     posts.draft = false;
     posts.published = true;

@@ -64,7 +64,24 @@ const postModel = new Schema(
     downVotes: [{ type: Schema.Types.ObjectId, ref: 'User', required: true }],
     comments: [Comment.schema],
     ratings: [{ type: Schema.Types.ObjectId, ref: 'Rating' }],
-    rating: { type: Number }
+    rating: { type: Number },
+    // new fields, to prevent JSON in 'text'
+    address: { type: String },
+    requestType: { type: String },
+    description: { type: String },
+    cart: [
+      {
+        name: { type: String, required: true },
+        quantity: { type: Number, default: 1 }
+      }
+    ],
+    contactMethod: { type: String, required: true },
+    email: { type: String, select: false },
+    name: { type: String },
+    dueDate: { type: Date },
+    location: { lat: { type: Number }, lng: { type: Number } },
+    postal: { type: String },
+    phoneNumber: { type: String, select: false },
   },
   {
     collection: 'Post'
