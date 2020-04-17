@@ -430,9 +430,8 @@ exports.validate = method => {
     case 'createUser': {
       return [
         body('username', `username missing`).exists(),
-        body('email', 'invalid email')
-          .isEmail(),
-          // .normalizeEmail(),
+        body('email', 'invalid email').isEmail(),
+        // .normalizeEmail(),
         body('password').custom(password => {
           if (!schema.validate(password))
             return Promise.reject(
