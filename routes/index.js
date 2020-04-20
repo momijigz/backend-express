@@ -967,7 +967,8 @@ router.get('/ongoing/:page', auth, async (req, res) => {
         }
       ]
     };
-    let posts = await Post.find(query).sort({ updatedAt: -1 })
+    let posts = await Post.find(query)
+      .sort({ updatedAt: -1 })
       .skip(resPerPage * page - resPerPage)
       .limit(resPerPage)
       .populate('authorId', 'name username karma createdAt profileVersion profilePictureUrl')
