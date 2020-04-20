@@ -641,6 +641,7 @@ router.post('/twilio/webhooks/call', async (req, res) => {
     console.log('===========> getting a new call: ', req.body);
     let currentTime = Number(moment.tz('America/Los_Angeles').format('H'));
     let night = !(currentTime >= 7 && currentTime <= 19); // 7am to 7pm PST
+    console.log('current time PST: ', currentTime);
 
     const twiml = new VoiceResponse();
 
