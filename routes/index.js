@@ -659,7 +659,7 @@ router.post('/twilio/webhooks/call', async (req, res) => {
 
       twilioCallHelper(req, user_ids, recordingUrl);
     } else {
-      if (!night) {
+      if (night) {
         console.log('speaking: ', twiml);
 
         // mp3 voicemail instead of robot
