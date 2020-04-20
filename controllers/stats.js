@@ -9,19 +9,22 @@ const Notification = require('../models/notification');
 
 const userSignups = async () => {
   const total = await User.count({});
-  const users = await User.find({
-    createdAt: {
-      $gt: moment(new Date()).subtract(9, 'days'),
+  const users = await User.find(
+    {
+      createdAt: {
+        $gt: moment(new Date()).subtract(9, 'days')
+      }
+    },
+    {
+      _id: true,
+      username: true,
+      email: true,
+      createdAt: true,
+      name: true
     }
-  }, {
-    _id: true,
-    username: true,
-    email: true,
-    createdAt: true,
-    name: true
-  }).exec();
+  ).exec();
 
-  const parsedUsers = users.map((u) => {
+  const parsedUsers = users.map(u => {
     const user = u.toObject();
     const { createdAt } = user;
 
@@ -32,18 +35,18 @@ const userSignups = async () => {
 
   const groupedByDay = _.groupBy(parsedUsers, u => u.createdAtMoment.format('YYYY-MM-DD'));
   const groupedByHour = _.mapValues(groupedByDay, (users, dateStr) => {
-    const byHour = _.groupBy(users, (el) => el.createdAtMoment.hour());
+    const byHour = _.groupBy(users, el => el.createdAtMoment.hour());
 
     return {
       date: dateStr,
       total: users.length,
-      byHour,
+      byHour
     };
   });
-  
+
   return {
     total,
-    days: _.orderBy(_.values(groupedByHour), ['date'], ['desc']),
+    days: _.orderBy(_.values(groupedByHour), ['date'], ['desc'])
   };
 };
 
@@ -57,28 +60,17 @@ const requests = async () => {
     total,
     claimed,
     completed,
-    released,
+    released
   };
 };
 
 const all = async (req, res, next) => {
-  const data = await Promise.all([
-    userSignups(),
-    requests(),
-  ]);
+  const data = await Promise.all([userSignups(), requests()]);
 
-  res.json(
-    _.zipObject(
-      [
-        'userSignups',
-        'requests',
-      ],
-      data
-    )
-  );
+  res.json(_.zipObject(['userSignups', 'requests'], data));
 };
 
 module.exports = {
   userSignups,
-  all,
+  all
 };
