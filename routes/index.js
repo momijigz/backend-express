@@ -668,7 +668,7 @@ router.post('/twilio/webhooks/call', async (req, res) => {
         // to access Twilio, please use team.givingtree@gmail.com
         twiml.play(
           {
-            loop: 10
+            loop: 1
           },
           'https://bazaar-angelfish-1962.twil.io/assets/hotline%20bling%20-%20giving%20tree.mp3'
         );
