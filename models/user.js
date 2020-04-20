@@ -47,7 +47,8 @@ const userModel = new Schema(
           required: true
         }
       }
-    ]
+    ],
+    admin: { type: Boolean, default: false, select: false }
   },
   {
     collection: 'User'
