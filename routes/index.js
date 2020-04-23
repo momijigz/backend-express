@@ -911,8 +911,7 @@ router.get('/discover/:page', async (req, res) => {
     let query = {
       completed: false,
       draft: false,
-      published: true,
-      assignedUser: null
+      published: true
     };
 
     if (req.query.lng && req.query.lat) {
