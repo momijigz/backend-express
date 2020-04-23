@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const { body, param, validationResult } = require('express-validator/check');
+const { postSlackMessage } = require('../util/postSlackMessage');
 const Post = require(__dirname + '/../models/post');
 const Newsfeed = require(__dirname + '/../models/newsfeed');
 const User = require(__dirname + '/../models/user');
@@ -190,6 +191,24 @@ exports.publishPost = async (req, res, next) => {
     }
 
     res.status(200).json(posts);
+
+    // Send new post to slack
+    try {
+      await postSlackMessage(
+        '#new-requests',
+        `New request from *${req.user.name}*\n>${title}\n${
+          process.env.NODE_ENV === 'PRODUCTION'
+            ? 'https://www.givingtreeproject.org'
+            : 'http://localhost:3001' + '/post/' + posts._id
+        }`,
+        {
+          username: 'Requests Bot'
+        }
+      );
+    } catch (err) {
+      // This is not critical enough to throw an error to client.
+      console.error('post to slack error: ', err);
+    }
   } catch (err) {
     console.log('err: ', err);
     res.status(400).json(err);
