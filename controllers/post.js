@@ -196,7 +196,11 @@ exports.publishPost = async (req, res, next) => {
     try {
       await postSlackMessage(
         '#new-requests',
-        `New request from *${req.user.name}*\n>${title}\n${process.env.NODE_ENV === 'PRODUCTION' ? 'https://www.givingtreeproject.org' : 'http://localhost:3001' + '/post/' + posts._id}`,
+        `New request from *${req.user.name}*\n>${title}\n${
+          process.env.NODE_ENV === 'PRODUCTION'
+            ? 'https://www.givingtreeproject.org'
+            : 'http://localhost:3001' + '/post/' + posts._id
+        }`,
         {
           username: 'Requests Bot'
         }
