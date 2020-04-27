@@ -26,6 +26,10 @@ const userModel = new Schema(
     sessionId: { type: String }, // for socket connections
     seenSubmitTutorial: { type: Boolean, default: false }, // to show user tutorial about submitting new articles
     welcomeTutorial: { type: Boolean, default: false }, // tutorial to show user around app
+    frontendData: {
+      type: Schema.Types.Mixed,
+      default: {}
+    },
     stripeCustomerId: { type: String, unique: true },
     url: { type: mongoose.SchemaTypes.Url },
     balanceUSD: { type: Number, default: 0 },

@@ -150,6 +150,23 @@ userRouter.put(
   }
 );
 
+userRouter.patch('/frontend-data', auth, async (req, res) => {
+  try {
+    const updateFields = Object.entries(req.body).map(([k, v]) => [`frontendData.${k}`, v]);
+    await req.user.update({ $set: Object.fromEntries(updateFields) });
+
+    res.send({ message: 'successfully updated frontendData' });
+  } catch (err) {
+    console.log('error: ', err);
+    res.status(400).send({ message: 'error while updating', error: err });
+  }
+});
+
+userRouter.get('/frontend-data', auth, async (req, res) => {
+  const frontendData = req.user.frontendData;
+  res.send(frontendData);
+});
+
 // update fields
 userRouter.put(
   '/',
