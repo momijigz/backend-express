@@ -81,7 +81,7 @@ exports.createUser = async (req, res, next) => {
       return;
     }
 
-    const { username, password, email, name } = req.body;
+    const { username, password, email, name, frontendData } = req.body;
 
     // force lower case so no confusion
     const user = await User.create({
@@ -89,7 +89,8 @@ exports.createUser = async (req, res, next) => {
       password,
       email: email.toLowerCase(),
       name,
-      profilePictureUrl: 'https://d1ppmvgsdgdlyy.cloudfront.net/acacia.svg'
+      profilePictureUrl: 'https://d1ppmvgsdgdlyy.cloudfront.net/acacia.svg',
+      frontendData: frontendData
     });
 
     const token = await user.generateAuthToken(true);
@@ -101,6 +102,7 @@ exports.createUser = async (req, res, next) => {
       name: user.name,
       profilePictureUr: user.profilePictureUrl,
       balanceUS: user.balanceUSD,
+      frontendData: user.frontendData,
       token,
       _id: user._id
     });
