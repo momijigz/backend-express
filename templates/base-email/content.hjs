@@ -1,0 +1,13 @@
+{{!-- MJML TEMPLATE, NOT HTML. CANNOT EMAIL DIRECTLY --}}
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+
+        <mj-image width="200px" src="https://www.givingtreeproject.org/tgt-logo-email-header.png"></mj-image>
+
+        <mj-text font-size="18px" font-family="Roboto, system-ui, sans-serif;">{{text}}</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -6,6 +6,7 @@ const User = require(__dirname + '/../models/user');
 const Notification = require(__dirname + '/../models/notification');
 var io = require(__dirname + '/../mysockets');
 const sendNotification = require(__dirname + '/../util/notification');
+const { sendEmail } = require('../util/send-email');
 
 exports.createComment = async (req, res, next) => {
   try {
@@ -52,6 +53,22 @@ exports.createComment = async (req, res, next) => {
         if (post.assignedUser) {
           const assignedUser = await User.findById(post.assignedUser);
           sendNotification(assignedUser, author, comment, 'Comment');
+        }
+
+        if (postAuthor._id !== author._id) {
+          // Someone commented on post author's post
+          await sendEmail('comment', {
+            // TODO: throw in a fallback URL for profilePictureUrl
+            recipient: postAuthor,
+            data: {
+              comment,
+              ctaLink:
+                process.env.NODE_ENV === 'PRODUCTION'
+                  ? 'https://www.givingtreeproject.org'
+                  : 'http://localhost:3001' + '/post/' + post._id,
+              author: author
+            }
+          });
         }
 
         return res.status(200).json(post);

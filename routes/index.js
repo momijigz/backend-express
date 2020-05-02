@@ -640,7 +640,7 @@ router.post('/twilio/webhooks/call', async (req, res) => {
   try {
     console.log('===========> getting a new call: ', req.body);
     let currentTime = Number(moment.tz('America/Los_Angeles').format('H'));
-    let night = !(currentTime >= 7 && currentTime <= 19); // 7am to 7pm PST
+    let night = !(currentTime >= 10 && currentTime < 18); // 10am to 6pm PST
 
     const twiml = new VoiceResponse();
 
@@ -668,7 +668,7 @@ router.post('/twilio/webhooks/call', async (req, res) => {
         // to access Twilio, please use team.givingtree@gmail.com
         twiml.play(
           {
-            loop: 10
+            loop: 1
           },
           'https://bazaar-angelfish-1962.twil.io/assets/hotline%20bling%20-%20giving%20tree.mp3'
         );
@@ -911,8 +911,7 @@ router.get('/discover/:page', async (req, res) => {
     let query = {
       completed: false,
       draft: false,
-      published: true,
-      assignedUser: null
+      published: true
     };
 
     if (req.query.lng && req.query.lat) {
@@ -952,96 +951,32 @@ router.get('/discover/:page', async (req, res) => {
 router.get('/ongoing/:page', auth, async (req, res) => {
   try {
     const resPerPage = 10;
-    const page = req.params.page || 1;
+    const page = req.params.page ? parseInt(req.params.page) : 1;
 
-    let newsFeed = await Newsfeed.find({ deleted: false })
+    const query = {
+      $or: [
+        {
+          // Incomplete requests the user has claimed
+          completed: false,
+          assignedUser: req.user._id
+        },
+        {
+          // User's own created requests
+          authorId: req.user._id
+        }
+      ]
+    };
+    let posts = await Post.find(query)
       .sort({ updatedAt: -1 })
       .skip(resPerPage * page - resPerPage)
       .limit(resPerPage)
+      .populate('authorId', 'name username karma createdAt profileVersion profilePictureUrl')
       .exec();
 
-    let compiledNewsfeed = [];
-
-    // pull extra information about posts
-    for (var i = 0; i < newsFeed.length; i++) {
-      let entry = newsFeed[i];
-
-      switch (entry.type) {
-        case 'Post':
-          let foundPost = await Post.findOne({
-            _id: entry.postId,
-            completed: false,
-            assignedUser: req.user._id // assigned to the user authenticating
-          })
-            .populate('authorId', 'name username karma createdAt profileVersion profilePictureUrl')
-            .exec();
-          if (foundPost) {
-            compiledNewsfeed.push(foundPost);
-          }
-          break;
-        case 'Comment':
-          break; // skip for now
-          let foundCommentParent = await Post.findById(entry.parentId);
-
-          // comments is the current commend thread
-          // parent is the parent comment or post of 'comments'
-          // goal is to return the parent and the child comment
-          let results = findCommentParent(entry.postId, foundCommentParent.comments, 'post');
-          if (!results) {
-            // post has been deleted but newsfeed exists
-            // delete from newsfeed here and then break;
-            let newsfeed = await Newsfeed.findOne({ postId: entry.postId, deleted: false });
-            if (newsfeed) {
-              newsfeed.deleted = true;
-              await newsfeed.save();
-            }
-
-            break;
-          }
-
-          var [parentId, comments] = results;
-
-          let parent;
-          if (parentId == 'post') {
-            parent = foundCommentParent;
-          } else {
-            parent = findComment(parentId, foundCommentParent.comments);
-          }
-
-          let childComment = comments.filter(comment => {
-            return comment._id.toString() == entry.postId.toString();
-          });
-
-          // attach parent to child
-          let commentObject = {
-            type: 'Comment',
-            voteTotal: childComment[0].voteTotal,
-            upVotes: childComment[0].upVotes,
-            downVotes: childComment[0].downVotes,
-            children: childComment[0].children,
-            comments: childComment[0].comments,
-            _id: childComment[0]._id,
-            content: childComment[0].content,
-            postId: childComment[0].postId,
-            username: childComment[0].username,
-            updatedAt: childComment[0].updatedAt,
-            createdAt: childComment[0].createdAt,
-            parent
-          };
-
-          if (foundCommentParent) {
-            compiledNewsfeed.push(commentObject);
-          }
-          break;
-        default:
-          break;
-      }
-    }
-
-    const numOfResults = await Newsfeed.count({ deleted: false });
+    const numOfResults = await Post.count(query);
 
     return res.send({
-      newsfeed: compiledNewsfeed,
+      newsfeed: posts,
       currentPage: page,
       pages: Math.ceil(numOfResults / resPerPage),
       numOfResults

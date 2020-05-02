@@ -1,0 +1,31 @@
+{{!-- MJML TEMPLATE, NOT HTML. CANNOT EMAIL DIRECTLY --}}
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+
+        <mj-image width="200px" src="https://www.givingtreeproject.org/tgt-logo-email-header.png"></mj-image>
+
+        <mj-text font-family="Roboto, system-ui, sans-serif;" padding-bottom="0px">Hi {{recipient.name}},</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section padding-top="0px" padding-bottom="0px">
+      <mj-column width="20%" padding-left="50px" padding-right="8px">
+        <mj-image width="50px" height="50px" padding="0px" border-radius="25px" src="{{author.profilePictureUrl}}" />
+      </mj-column>
+      <mj-column width="80%">
+        <mj-text>{{author.username}} has commented on your request.</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column width="60%" border-left="2px solid #FFC525">
+        <mj-text>{{comment.content}}</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column>
+        <mj-button background-color="#1e853b" font-size="20px" href="{{ctaLink}}">Reply Now</mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
