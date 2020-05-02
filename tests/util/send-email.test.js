@@ -27,22 +27,26 @@ describe('Send Email Util', function() {
   it('should throw if no valid recipient', async function() {
     await expect(sendEmail('base-email')).to.eventually.be.rejectedWith(Error);
   });
-  
+
   it('should throw if no data', async function() {
-    await expect(sendEmail('base-email', {
-      recipient: {
-        email: 'test@givingtreeproject.org'
-      }
-    })).to.eventually.be.rejectedWith(Error);
+    await expect(
+      sendEmail('base-email', {
+        recipient: {
+          email: 'test@givingtreeproject.org'
+        }
+      })
+    ).to.eventually.be.rejectedWith(Error);
   });
 
   it('should not throw if data and recipient', async function() {
-    await expect(sendEmail('base-email', {
-      recipient: {
-        email: 'test@givingtreeproject.org'
-      },
-      data: {}
-    })).to.eventually.be.an('object');
+    await expect(
+      sendEmail('base-email', {
+        recipient: {
+          email: 'test@givingtreeproject.org'
+        },
+        data: {}
+      })
+    ).to.eventually.be.an('object');
   });
 
   it('should send mail with required properties', async function() {

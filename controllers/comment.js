@@ -62,10 +62,11 @@ exports.createComment = async (req, res, next) => {
             recipient: postAuthor,
             data: {
               comment,
-              ctaLink: process.env.NODE_ENV === 'PRODUCTION'
-                ? 'https://www.givingtreeproject.org'
-                : 'http://localhost:3001' + '/post/' + post._id,
-              author: author,
+              ctaLink:
+                process.env.NODE_ENV === 'PRODUCTION'
+                  ? 'https://www.givingtreeproject.org'
+                  : 'http://localhost:3001' + '/post/' + post._id,
+              author: author
             }
           });
         }
