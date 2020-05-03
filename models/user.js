@@ -18,14 +18,23 @@ const userModel = new Schema(
     username: { type: String, required: true, lowercase: true, unique: true },
     password: { type: String, required: true },
     karma: { type: Number, default: 0 },
+    flagged: { type: Boolean, default: false }, // flagged accounts cannot interact
     expert: { type: Boolean }, // similar to Yelp Elite's: experts are qualified people in industry who have been vetted and can provide good feedback
     createdAt: { type: Date },
+    cancelledTasks: { type: Number, default: 0 },
+    completedTasks: { type: Number, default: 0 },
     sessionId: { type: String }, // for socket connections
     seenSubmitTutorial: { type: Boolean, default: false }, // to show user tutorial about submitting new articles
     welcomeTutorial: { type: Boolean, default: false }, // tutorial to show user around app
+    frontendData: {
+      type: Schema.Types.Mixed,
+      default: {}
+    },
     stripeCustomerId: { type: String, unique: true },
     url: { type: mongoose.SchemaTypes.Url },
     balanceUSD: { type: Number, default: 0 },
+    profileVersion: { type: Number, default: 0 }, // every time photo is uploaded, a new version is assigned
+    headerVersion: { type: Number, default: 0 }, // every time photo is uploaded, a new version is assigned
     headerPictureUrl: {
       type: mongoose.SchemaTypes.Url,
       default: 'https://d1ppmvgsdgdlyy.cloudfront.net/giving_tree.jpg'
@@ -42,7 +51,8 @@ const userModel = new Schema(
           required: true
         }
       }
-    ]
+    ],
+    admin: { type: Boolean, default: false, select: false }
   },
   {
     collection: 'User'

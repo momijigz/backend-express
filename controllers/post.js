@@ -1,4 +1,6 @@
+const _ = require('lodash');
 const { body, param, validationResult } = require('express-validator/check');
+const { postSlackMessage } = require('../util/postSlackMessage');
 const Post = require(__dirname + '/../models/post');
 const Newsfeed = require(__dirname + '/../models/newsfeed');
 const User = require(__dirname + '/../models/user');
@@ -21,8 +23,12 @@ exports.deletePost = async (req, res, next) => {
       return res.status(422).json({ message: `postId ${postId} doesn't exist` });
     }
 
-    let posts = await Post.findOne({ _id: postId });
-    let newsfeed = await Newsfeed.findOne({ postId: postId, deleted: false });
+    let posts = await Post.findOne({ _id: postId, authorId: req.user._id });
+    let newsfeed = await Newsfeed.findOne({
+      postId: postId,
+      ownerId: req.user._id,
+      deleted: false
+    });
 
     if (posts) {
       posts.remove();
@@ -52,20 +58,31 @@ exports.createDraft = async (req, res, next) => {
       return;
     }
 
-    const { categories, title, text } = req.body;
-
-    // parse lat, long from text location
-    let location = JSON.parse(text).location;
+    const { categories, title, text, location } = req.body;
 
     const posts = await Post.create({
       categories: categories.split(','),
       title,
       text,
-      loc: [location.lng, location.lat], // [longitude, latitude]
+      loc: { type: 'Point', coordinates: [Number(location.lng), Number(location.lat)] }, // [longitude, latitude]
       authorId: req.user._id,
       username: req.user.username,
       draft: true,
-      published: false
+      published: false,
+      ..._.pick(req.body, [
+        'contactMethod',
+        'email',
+        'name',
+        'dueDate',
+        'location',
+        'postal',
+        'phoneNumber',
+        'address',
+        'requestType',
+        'description',
+        'cart',
+        'publicAddress'
+      ])
     });
 
     res.status(200).json(posts);
@@ -151,17 +168,6 @@ exports.publishPost = async (req, res, next) => {
     }
 
     const { categories, title, text } = req.body;
-    posts.categories = categories;
-    posts.title = title;
-    posts.text = text;
-
-    console.log('text: ', text);
-    console.log('JSON.parse(text).location: ', JSON.parse(text).location);
-    const location = {
-      type: 'Point',
-      coordinates: [JSON.parse(text).location.lat, JSON.parse(text).location.lng]
-    };
-    posts.loc = location;
 
     posts.draft = false;
     posts.published = true;
@@ -185,6 +191,24 @@ exports.publishPost = async (req, res, next) => {
     }
 
     res.status(200).json(posts);
+
+    // Send new post to slack
+    try {
+      await postSlackMessage(
+        '#new-requests',
+        `New request from *${req.user.name}*\n>${title}\n${
+          process.env.NODE_ENV === 'PRODUCTION'
+            ? 'https://www.givingtreeproject.org'
+            : 'http://localhost:3001' + '/post/' + posts._id
+        }`,
+        {
+          username: 'Requests Bot'
+        }
+      );
+    } catch (err) {
+      // This is not critical enough to throw an error to client.
+      console.error('post to slack error: ', err);
+    }
   } catch (err) {
     console.log('err: ', err);
     res.status(400).json(err);

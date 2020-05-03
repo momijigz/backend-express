@@ -49,12 +49,14 @@ const postV1 = require('./routes/v1/posts');
 const userV1 = require('./routes/v1/users');
 const commentV1 = require('./routes/v1/comments');
 const repliesV1 = require('./routes/v1/replies');
+const statsV1 = require('./routes/v1/stats');
 
 app.use('/', routes);
 app.use('/v1/post', postV1);
 app.use('/v1/user', userV1);
 app.use('/v1/post', commentV1);
 app.use('/v1/post', repliesV1);
+app.use('/v1/stats', statsV1);
 
 app.use(function(req, res, next) {
   if (!req.route) return res.status(404).json({ error: '404 Route Not Found' });

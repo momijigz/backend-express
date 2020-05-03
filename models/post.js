@@ -39,10 +39,11 @@ const postModel = new Schema(
     loc: {
       type: {
         type: String,
-        enum: ['Point']
+        default: 'Point'
       },
       coordinates: {
-        type: [Number]
+        type: [Number],
+        default: [0, 0]
       }
     },
     completed: { type: Boolean, required: true, default: false },
@@ -55,6 +56,9 @@ const postModel = new Schema(
       dropoffEta: { type: String }, // string for the MVP
       notes: { type: String } // any notes from order (missing items, etc)
     },
+    cancelTaskerReason: [
+      { reason: { type: String }, user: { type: Schema.Types.ObjectId, ref: 'User' } }
+    ],
     assignedUser: { type: Schema.Types.ObjectId, ref: 'User' },
     flagged: [{ type: Schema.Types.ObjectId, ref: 'User', required: true }], // other Users can flag a post if it violates, after a certain number, the flagged content is manually reviewed
     voteTotal: { type: Number, default: 0 },
@@ -62,14 +66,36 @@ const postModel = new Schema(
     downVotes: [{ type: Schema.Types.ObjectId, ref: 'User', required: true }],
     comments: [Comment.schema],
     ratings: [{ type: Schema.Types.ObjectId, ref: 'Rating' }],
-    rating: { type: Number }
+    rating: { type: Number },
+    // new fields, to prevent JSON in 'text'
+    address: { type: String, select: false },
+    requestType: { type: String },
+    description: { type: String },
+    cart: [
+      {
+        name: { type: String, required: true },
+        quantity: { type: Number, default: 1 }
+      }
+    ],
+    contactMethod: { type: String, required: true },
+    email: { type: String, select: false },
+    name: { type: String },
+    dueDate: { type: Date },
+    location: {
+      type: {
+        lat: { type: Number },
+        lng: { type: Number }
+      },
+      select: false
+    },
+    postal: { type: String },
+    phoneNumber: { type: String, select: false },
+    publicAddress: { type: String }
   },
   {
     collection: 'Post'
   }
 );
-
-postModel.index({ loc: '2dsphere' });
 
 postModel.pre('save', function(next) {
   const date = new Date();
@@ -79,6 +105,8 @@ postModel.pre('save', function(next) {
   }
   next();
 });
+
+postModel.index({ loc: '2dsphere' });
 
 postModel.plugin(mongooseAlgolia, {
   appId: process.env.ALGOLIA_APP_ID,

@@ -64,18 +64,19 @@ const BUCKET_NAME = 'giving-tree/user';
 
 function generateHash(user) {
   let username = user.username;
+  let version = (user.profileVersion || 0) + 1; // 0 is default
   const secret = 'givingtree';
   const hash = require('crypto')
     .createHmac('sha256', secret)
     .update(username.toLowerCase())
     .digest('hex');
 
-  return `${hash}`;
+  return `${hash}?ver=${version}`;
 }
 
 function generateHashHeader(user) {
   let username = user.username;
-  console.log('header: ', user.username);
+  let version = (user.headerVersion || 0) + 1; // 0 is default
   let currentDate = new Date().toString();
   const secret = 'givingtree';
   const hash = require('crypto')
@@ -83,7 +84,7 @@ function generateHashHeader(user) {
     .update(username.toLowerCase() + currentDate)
     .digest('hex');
 
-  return `headers/${hash}`;
+  return `headers/${hash}?ver=${version}`;
 }
 
 function generateInlineHash(user) {
@@ -100,7 +101,7 @@ function generateInlineHash(user) {
 
 var upload = multer({
   fileFilter: function(req, file, cb) {
-    var filetypes = /jpeg|jpg|png|svg/;
+    var filetypes = /jpeg|jpg|png|svg|gif/;
     var mimetype = filetypes.test(file.mimetype);
     var extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 
@@ -149,6 +150,23 @@ userRouter.put(
   }
 );
 
+userRouter.patch('/frontend-data', auth, async (req, res) => {
+  try {
+    const updateFields = Object.entries(req.body).map(([k, v]) => [`frontendData.${k}`, v]);
+    await req.user.update({ $set: Object.fromEntries(updateFields) });
+
+    res.send({ message: 'successfully updated frontendData' });
+  } catch (err) {
+    console.log('error: ', err);
+    res.status(400).send({ message: 'error while updating', error: err });
+  }
+});
+
+userRouter.get('/frontend-data', auth, async (req, res) => {
+  const frontendData = req.user.frontendData;
+  res.send(frontendData);
+});
+
 // update fields
 userRouter.put(
   '/',
@@ -162,6 +180,7 @@ userRouter.put(
       if (req.files.image) {
         if (req.files.image[0].location) {
           req.user.profilePictureUrl = req.files.image[0].location;
+          req.user.profileVersion = (req.user.profileVersion || 0) + 1;
           await req.user.save();
         }
       }
@@ -169,6 +188,7 @@ userRouter.put(
       if (req.files.header) {
         if (req.files.header[0].location) {
           req.user.headerPictureUrl = req.files.header[0].location;
+          req.user.headerVersion = (req.user.headerVersion || 0) + 1;
           await req.user.save();
         }
       }
@@ -310,30 +330,81 @@ userRouter.get(
   }
 );
 
-userRouter.get('/:id', userController.validate('publicAuth'), publicAuth, async (req, res) => {
-  let postFeed = await Post.find({
-    authorId: req.user._id,
-    published: true,
-    draft: false
-  })
-    .sort({ updatedAt: -1 })
-    .exec();
-  let commentFeed = await Comment.find({ authorId: req.user._id }).exec();
-  let followers = await Follow.find({ leaderId: req.user._id }).exec();
-  let following = await Follow.find({ followerId: req.user._id }).exec();
+userRouter.get(
+  '/:id/pictures',
+  userController.validate('publicAuth'),
+  publicAuth,
+  async (req, res) => {
+    let user = {
+      message: 'success!',
+      _id: req.user._id,
+      username: req.user.username,
+      profilePictureUrl: req.user.profilePictureUrl,
+      headerPictureUrl: req.user.headerPictureUrl
+    };
 
-  let upvotePosts = await Post.find({ upVotes: req.user._id })
-    .sort({ createdAt: -1 })
-    .exec();
-  let downvotePosts = await Post.find({ downVotes: req.user._id })
-    .sort({ createdAt: -1 })
-    .exec();
-  let upvoteComments = await Comment.find({ upVotes: req.user._id })
-    .sort({ createdAt: -1 })
-    .exec();
-  let downvoteComments = await Comment.find({ downVotes: req.user._id })
-    .sort({ createdAt: -1 })
-    .exec();
+    return res.send(user);
+  }
+);
+
+userRouter.get('/:id', userController.validate('publicAuth'), publicAuth, async (req, res) => {
+  let postFeed = cache.get(`postFeed_${req.user._id}`);
+
+  if (!postFeed) {
+    postFeed = await Post.find({
+      authorId: req.user._id,
+      published: true
+    })
+      .select({
+        createdAt: 1,
+        updatedAt: 1,
+        upVotes: 1,
+        downVotes: 1,
+        text: 1,
+        title: 1,
+        categories: 1,
+        requestType: 1,
+        description: 1,
+        cart: 1,
+        contactMethod: 1,
+        name: 1,
+        dueDate: 1,
+        postal: 1,
+        publicAddress: 1
+      })
+      .limit(10)
+      .exec();
+
+    cache.put(`postFeed_${req.user._id}`, postFeed, 10 * 60 * 1000);
+  } else {
+    console.log('cached');
+  }
+
+  const [
+    commentFeed,
+    upvotePosts,
+    downvotePosts,
+    upvoteComments,
+    downvoteComments,
+    followers,
+    following
+  ] = await Promise.all([
+    await Comment.find({ authorId: req.user._id }).exec(),
+    await Post.find({ upVotes: req.user._id })
+      .sort({ createdAt: -1 })
+      .exec(),
+    await Post.find({ downVotes: req.user._id })
+      .sort({ createdAt: -1 })
+      .exec(),
+    await Comment.find({ upVotes: req.user._id })
+      .sort({ createdAt: -1 })
+      .exec(),
+    await Comment.find({ downVotes: req.user._id })
+      .sort({ createdAt: -1 })
+      .exec(),
+    await Follow.find({ leaderId: req.user._id }).exec(),
+    await Follow.find({ followerId: req.user._id }).exec()
+  ]);
 
   let upvotesFeed = upvotePosts.concat(upvoteComments);
   let downvotesFeed = downvotePosts.concat(downvoteComments);
@@ -347,8 +418,11 @@ userRouter.get('/:id', userController.validate('publicAuth'), publicAuth, async 
     _id: req.user._id,
     name: req.user.name,
     summary: req.user.summary,
+    karma: req.user.karma,
     email: req.user.email,
     username: req.user.username,
+    profileVersion: req.user.profileVersion || 0,
+    headerVersion: req.user.headerVersion || 0,
     profilePictureUrl: req.user.profilePictureUrl,
     headerPictureUrl: req.user.headerPictureUrl,
     verified: req.user.verified,
@@ -423,40 +497,35 @@ userRouter.put('/seen', auth, async (req, res) => {
 
 // can speed up this call
 userRouter.get('/', auth, async (req, res) => {
-  let result = cache.get(req.user._id);
-
-  if (result) {
-    res.status(200).json(result);
-  } else {
-    let notifications = await Notification.find({ to: req.user._id, seen: false })
-      .populate('to')
-      .populate('from')
-      .exec();
-    for (var i = 0; i < notifications.length; i++) {
-      notifications[i].postId = await Newsfeed.findOne({
-        postId: notifications[i].postId,
-        deleted: false
-      }).exec();
-    }
-
-    let draftsFeed = await Post.find({ draft: true, authorId: req.user._id }).exec();
-
-    let returnObject = {
-      username: req.user.username,
-      email: req.user.email,
-      createdAt: req.user.createdAt,
-      drafts: draftsFeed,
-      seenSubmitTutorial: req.user.seenSubmitTutorial,
-      welcomeTutorial: req.user.welcomeTutorial,
-      _id: req.user._id,
-      notifications,
-      message: 'success!'
-    };
-
-    cache.put(req.user._id, returnObject, 5 * 60 * 1000); // they update rates every 5 minutes
-
-    res.status(200).json(returnObject);
+  let notifications = await Notification.find({ to: req.user._id, seen: false })
+    .populate('to', 'username profilePictureUrl')
+    .populate('from', 'username profilePictureUrl')
+    .exec();
+  for (var i = 0; i < notifications.length; i++) {
+    notifications[i].postId = await Newsfeed.findOne({
+      postId: notifications[i].postId,
+      deleted: false
+    }).exec();
   }
+
+  let draftsFeed = await Post.find({ draft: true, authorId: req.user._id }).exec();
+
+  let returnObject = {
+    username: req.user.username,
+    name: req.user.name,
+    profileVersion: req.user.profileVersion,
+    headerVersion: req.user.headerVersion,
+    email: req.user.email,
+    createdAt: req.user.createdAt,
+    drafts: draftsFeed,
+    seenSubmitTutorial: req.user.seenSubmitTutorial,
+    welcomeTutorial: req.user.welcomeTutorial,
+    _id: req.user._id,
+    notifications,
+    message: 'success!'
+  };
+
+  res.status(200).json(returnObject);
 });
 
 module.exports = userRouter;

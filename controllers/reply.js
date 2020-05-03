@@ -9,6 +9,17 @@ const mongoose = require('mongoose');
 var io = require(__dirname + '/../mysockets');
 const sendNotification = require(__dirname + '/../util/notification');
 
+function antiSpam(user, author) {
+  var diff = new Date() - new Date(user.createdAt);
+  var diffdays = diff / 1000 / (60 * 60 * 24);
+
+  // account must be 1 day old
+  if (Number(diffdays) < 1 || user._id.toString() === author._id.toString()) {
+    return false;
+  }
+  return true;
+}
+
 const findComment = (id, comments) => {
   if (comments.length > 0) {
     for (var index = 0; index < comments.length; index++) {
@@ -181,6 +192,9 @@ exports.upvote = async (req, res, next) => {
           return res.status(400).json({ message: `invalid postId or commentId` });
         }
 
+        // let previous = comment.upVotes;
+
+        let contains = comment.upVotes.includes(user._id);
         comment.downVotes = removeFromSet(comment.downVotes, user._id);
         comment.upVotes = addToSet(comment.upVotes, user._id);
         comment.voteTotal = comment.upVotes.length - comment.downVotes.length;
@@ -194,9 +208,18 @@ exports.upvote = async (req, res, next) => {
         post.markModified('comments');
         post.save();
 
+        // let after = comment.upVotes;
         let commentWithParent = await populateParent(comment._id, postId, comment);
 
         let commentAuthor = await User.findOne({ username: comment.username });
+
+        if (antiSpam(user, commentAuthor)) {
+          console.log(chalk.magenta('save ======== ', contains.toString()));
+
+          commentAuthor.karma =
+            Number(commentAuthor.karma) + Number(contains ? (commentAuthor.karma > 0 ? -1 : 0) : 1);
+          await commentAuthor.save();
+        }
 
         sendNotification(commentAuthor, user, comment, 'Upvote');
 
@@ -231,6 +254,8 @@ exports.downvote = async (req, res, next) => {
           return res.status(400).json({ message: `invalid postId or commentId` });
         }
 
+        // let previous = comment.downVotes;
+        let contains = comment.downVotes.includes(user._id);
         comment.downVotes = addToSet(comment.downVotes, user._id);
         comment.upVotes = removeFromSet(comment.upVotes, user._id);
         comment.voteTotal = comment.upVotes.length - comment.downVotes.length;
@@ -244,9 +269,18 @@ exports.downvote = async (req, res, next) => {
         post.markModified('comments');
         post.save();
 
+        // let after = comment.downVotes;
         let commentWithParent = await populateParent(comment._id, postId, comment);
 
         let commentAuthor = await User.findOne({ username: comment.username });
+
+        if (antiSpam(user, commentAuthor)) {
+          commentAuthor.karma =
+            Number(commentAuthor.karma) > 0
+              ? Number(commentAuthor.karma) + Number(contains ? 1 : -1)
+              : 0;
+          await commentAuthor.save();
+        }
 
         sendNotification(commentAuthor, user, comment, 'Downvote');
 

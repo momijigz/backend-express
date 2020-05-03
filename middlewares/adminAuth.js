@@ -14,24 +14,19 @@ const deleteToken = async expiredToken => {
   }
 };
 
-const optionalAuth = async (req, res, next) => {
-  const token = req.header('Authorization').replace('Bearer ', '');
-
+const auth = async (req, res, next) => {
+  let token;
   try {
+    token = req.header('Authorization').replace('Bearer ', '');
+
     const dateNow = new Date();
-
-    if (token && token !== 'null') {
-      const data = jwt.verify(token, process.env.JWT_KEY);
-      const user = await User.findOne({ _id: data._id, 'tokens.token': token });
-
-      if (user) {
-        if (data.exp < dateNow.getTime() / 1000) {
-          throw new Error();
-        }
-        req.user = user;
-        req.token = token;
-      }
+    const data = jwt.verify(token, process.env.JWT_KEY);
+    const user = await User.findOne({ _id: data._id, 'tokens.token': token, admin: true });
+    if (!user || data.exp < dateNow.getTime() / 1000) {
+      throw new Error();
     }
+    req.user = user;
+    req.token = token;
     next();
   } catch (error) {
     let errorResponse = { details: error, code: 401 };
@@ -48,4 +43,4 @@ const optionalAuth = async (req, res, next) => {
   }
 };
 
-module.exports = optionalAuth;
+module.exports = auth;
